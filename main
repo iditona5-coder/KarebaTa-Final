@@ -1,0 +1,17 @@
+name: Deploy
+on:
+  push:
+    branches:
+      - utama
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci && npm run build
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_KAREBA_TA_728D0 }}'
+          channelId: live
+          projectId: kareba-ta-728d0
