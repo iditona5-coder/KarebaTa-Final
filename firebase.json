@@ -1,27 +1,8 @@
 {
-  "firestore": {
-    "rules": "firestore.rules"
-  },
   "hosting": {
+    "site": "kareba-ta-ugi",
     "public": "dist",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "/admin/**",
-        "destination": "/admin.html"
-      },
-      {
-        "source": "/admin",
-        "destination": "/admin.html"
-      },
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [{ "source": "**", "destination": "/index.html" }]
   }
 }
