@@ -1,0 +1,1 @@
+export { KarebaPinIcon } from "./KarebaTaLogo";

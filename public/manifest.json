@@ -1,0 +1,18 @@
+{
+  "name": "Kareba'Ta — Beritamu Suaramu",
+  "short_name": "Kareba'Ta",
+  "description": "Media sosial kabar dan momen warga terkini.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#00632B",
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 220" fill="none">
+  <!-- Pin Icon Kuning Keemasan Kareba'Ta -->
+  <path d="M 90 205 C 85 187 20 120 20 78 A 70 70 0 1 1 160 78 C 160 120 95 187 90 205 Z" fill="#E5A000"/>
+  <!-- Huruf K Tebal Putih Bersih di Dalam Pin -->
+  <path d="M 55 42 H 74 V 76 L 106 42 H 130 L 91 82 L 132 122 H 108 L 74 88 V 122 H 55 V 42 Z" fill="#ffffff"/>
+  <!-- Teks Kareba'Ta (Kareba' Hijau Tua, Ta Kuning Emas) -->
+  <text x="180" y="118" font-family="'Poppins', 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="98" letter-spacing="-1">
+    <tspan fill="#00632B">Kareba'</tspan><tspan fill="#E5A000">Ta</tspan>
+  </text>
+  <!-- Slogan beritamu suaramu (Kuning Emas) -->
+  <text x="185" y="185" font-family="'Poppins', 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="700" font-size="44" fill="#E5A000" letter-spacing="1">
+    beritamu suaramu
+  </text>
+</svg>

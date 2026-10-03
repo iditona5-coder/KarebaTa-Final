@@ -1,0 +1,172 @@
+@import "tailwindcss";
+
+/* Matikan tap-highlight bawaan browser (kotak abu-abu/biru saat disentuh di HP) */
+*,
+*::before,
+*::after {
+  -webkit-tap-highlight-color: transparent !important;
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE dan Edge */
+}
+
+/* Sembunyikan batang scrollbar di semua elemen tapi tetap bisa di-scroll dengan mulus dan ringan */
+*::-webkit-scrollbar,
+::-webkit-scrollbar {
+  display: none !important; /* Chrome, Safari, Edge WebKit */
+  width: 0px !important;
+  height: 0px !important;
+  background: transparent !important;
+}
+
+/* Matikan garis biru/hitam fokus bawaan browser saat diklik/disentuh */
+*:focus:not(:focus-visible) {
+  outline: none !important;
+}
+
+html {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none !important;
+  overscroll-behavior-y: none !important;
+  overscroll-behavior-x: none !important;
+  touch-action: pan-y !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+  -webkit-touch-callout: none !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: none !important;
+  overscroll-behavior-y: none !important;
+  overscroll-behavior-x: none !important;
+  touch-action: pan-y !important;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  user-select: none !important;
+  -webkit-touch-callout: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  margin: 0;
+  padding: 0;
+}
+
+#root {
+  overscroll-behavior: none !important;
+  overscroll-behavior-x: none !important;
+  overscroll-behavior-y: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+/* Izinkan seleksi & pengetikan teks hanya pada kolom formulir (input & textarea) */
+input, textarea, [contenteditable="true"] {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
+  -webkit-touch-callout: default !important;
+  touch-action: manipulation !important;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  border-radius: 0;
+}
+
+/* Matikan tombol silang bawaan search di browser webkit dan tombol panah di number input */
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration {
+  display: none !important;
+  -webkit-appearance: none;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Hilangkan warna kuning/biru bawaan browser saat autocomplete/autofill */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px white inset !important;
+  box-shadow: 0 0 0 30px white inset !important;
+}
+
+/* Cegah zoom otomatis bawaan iOS Safari saat mengetik di input pada layar HP */
+@media screen and (max-width: 768px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* Matikan menu pop-up bawaan browser saat gambar ditekan lama dan efek drag ghost */
+img, video, svg, a, button {
+  -webkit-touch-callout: none !important;
+  -webkit-user-drag: none !important;
+}
+
+img, video {
+  -webkit-user-select: none !important;
+  user-select: none !important;
+  pointer-events: auto;
+}
+
+/* Cegah efek karet melar (overscroll stretch/rubber-band) bawaan browser pada container scroll horizontal */
+.horizontal-scroll-container {
+  overscroll-behavior-x: none !important;
+  overscroll-behavior-y: auto !important;
+  overscroll-behavior: none !important;
+  touch-action: pan-x pan-y !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+#karebata-feed-header {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  will-change: transform;
+}
+
+/* Animasi Papan Teks Berjalan (Running Text Marquee) */
+@keyframes marquee-scroll {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: marquee-scroll 34s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+.paused-marquee {
+  animation-play-state: paused !important;
+}
+

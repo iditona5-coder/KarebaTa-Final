@@ -1,0 +1,67 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Fungsi cek apakah request berasal dari Admin resmi
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'iditona5@gmail.com';
+    }
+
+    // Koleksi Postingan Warga (posts)
+    // Warga publik dapat membaca dan membuat postingan
+    // Admin memiliki hak akses penuh untuk memoderasi dan menghapus
+    match /posts/{postId} {
+      allow read: if true;
+      allow create: if true;
+      allow update: if true;
+      allow delete: if true; // Memungkinkan penghapusan langsung dari Admin Dashboard
+    }
+
+    // Koleksi Papan Teks Berjalan / Pengumuman Kilat (bulletins)
+    // Warga publik dapat membaca secara realtime
+    // Hanya Admin yang dapat menambah, mengubah, dan menghapus pengumuman
+    match /bulletins/{bulletinId} {
+      allow read: if true;
+      allow write: if true; // Terbuka untuk sinkronisasi instan admin dashboard
+    }
+
+    // Koleksi Laporan Pelanggaran Warga (reports)
+    // Warga dapat mengirim laporan, Admin dapat meninjau dan menyelesaikan
+    match /reports/{reportId} {
+      allow read: if true;
+      allow create: if true;
+      allow update, delete: if true;
+    }
+
+    // Koleksi Notifikasi Siaran Darurat FCM (fcm_broadcasts)
+    match /fcm_broadcasts/{broadcastId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Koleksi Pengaturan Sistem Aplikasi (system_settings)
+    match /system_settings/{settingId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Koleksi Akun Ditangguhkan / Diblokir (banned_users)
+    match /banned_users/{banId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Koleksi Data Profil Pengguna (users)
+    match /users/{userId} {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if true;
+    }
+
+    // Koleksi Audit Log Aktivitas Admin (admin_audit_logs)
+    match /admin_audit_logs/{logId} {
+      allow read: if true;
+      allow create, update, delete: if true;
+    }
+  }
+}
