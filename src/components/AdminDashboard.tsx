@@ -281,7 +281,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const handlePasscodeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setPasscodeError(null);
-    const validPasscode = appConfig.adminPasscode || "123456";
+    const validPasscode = appConfig.adminPasscode || "12345";
 
     if (passcodeInput.trim() === validPasscode.trim()) {
       sessionStorage.setItem("karebata_admin_passcode_verified", "true");
