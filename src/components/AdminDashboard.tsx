@@ -125,7 +125,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   });
   const [passcodeInput, setPasscodeInput] = useState("");
   const [passcodeError, setPasscodeError] = useState<string | null>(null);
-
+  const [showPasscode, setShowPasscode] = useState(false);
   // Form Login Email & Password Admin
   const [loginEmail, setLoginEmail] = useState(PRIMARY_ADMIN_EMAIL);
   const [loginPassword, setLoginPassword] = useState("");
@@ -499,18 +499,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <span className="text-[10px] text-slate-400">PIN 6-digit</span>
                 </div>
                 <div className="relative">
-                  <input
-                    type="password"
-                    required
-                    maxLength={10}
-                    autoFocus
-                    value={passcodeInput}
-                    onChange={(e) => setPasscodeInput(e.target.value)}
-                    placeholder="Masukkan Passcode Rahasia..."
-                    className="w-full bg-[#080D1A] border border-slate-700 rounded-xl py-2.5 pl-9 pr-3 text-center tracking-widest text-sm font-black text-amber-300 focus:outline-none focus:border-amber-400 transition"
-                  />
-                  <Key className="w-4 h-4 text-amber-400 absolute left-3 top-3" />
-                </div>
+  <input
+    type={showPasscode ? "text" : "password"}
+    required
+    maxLength={10}
+    autoFocus
+    value={passcodeInput}
+    onChange={(e) => setPasscodeInput(e.target.value)}
+    placeholder="Masukkan Passcode Rahasia..."
+    className="w-full bg-[#080D1A] border border-slate-700 rounded-xl py-3 pl-10 pr-12 text-white placeholder:text-slate-500 focus:border-amber-500 focus:ring-amber-500 outline-none"
+  />
+  <Key className="w-4 h-4 text-amber-400 absolute left-3 top-3.5" />
+  <button
+    type="button"
+    onClick={() => setShowPasscode(!showPasscode)}
+    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+  >
+    {showPasscode ? (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.94 10.94 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.59 9.59 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+    ) : (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+    )}
+  </button>
+</div>
                 <p className="text-[10px] text-slate-500 mt-1">
                   * Passcode dapat diubah kapan saja di menu Pengaturan Dashboard.
                 </p>
