@@ -296,7 +296,7 @@ export const RunningTextBar: React.FC<RunningTextBarProps> = ({
                   </p>
                   {b.location && (
                     <p className="text-[10px] text-neutral-500 mt-1 flex items-center gap-1">
-                      <MapPin className="w-3 h-3 text-red-500" />
+                      <MapPin className="w-3 h-3 text-yellow-500" />
                       <span>{b.location}</span>
                     </p>
                   )}

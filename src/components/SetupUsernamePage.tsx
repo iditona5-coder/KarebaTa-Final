@@ -77,7 +77,7 @@ export const SetupUsernamePage: React.FC<SetupUsernamePageProps> = ({
                   <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
                   <span>Akun Google Terhubung</span>
                 </div>
-                <p className="text-xs text-neutral-500 truncate" title={currentUser.email || ""}>
+                <p className="text-xs text-neutral-500 truncate">
                   {currentUser.email}
                 </p>
               </div>

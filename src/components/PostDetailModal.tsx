@@ -128,7 +128,7 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
                 </div>
                 {postLocation && (
                   <div className="flex items-center gap-1 text-[11px] text-neutral-500 mt-0.5">
-                    <MapPin className="w-3 h-3 text-red-500 shrink-0 inline" />
+                    <MapPin className="w-3 h-3 text-yellow-500 shrink-0 inline" />
                     <span className="truncate">{postLocation}</span>
                   </div>
                 )}
@@ -272,7 +272,7 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
             {/* Ikon Tayangan / Dilihat (Fitur Analitik) - Posisi di samping kanan icon Laporkan/Hapus */}
             <div
               className="flex items-center gap-1.5 py-1 text-neutral-500 select-none ml-auto sm:ml-0"
-              title={`${postViews.toLocaleString("id-ID")} kali dilihat`}
+              aria-label={`${postViews.toLocaleString("id-ID")} kali dilihat`}
             >
               <Eye className="w-4 h-4 text-neutral-400" />
               <span>{postViews ? postViews.toLocaleString("id-ID") : 0} dilihat</span>

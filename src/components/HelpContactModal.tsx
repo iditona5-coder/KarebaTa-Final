@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   Clock,
   ExternalLink,
@@ -6,7 +7,7 @@ import {
   Megaphone,
   ArrowLeft,
   MessageCircle,
-  CheckCircle2
+  CheckCircle2,
 } from "lucide-react";
 import { HelpSettings } from "../types";
 
@@ -23,7 +24,26 @@ export const HelpContactModal: React.FC<HelpContactModalProps> = ({
   settings,
   onShowToast,
 }) => {
-  if (!isOpen) return null;
+  // Lock body scroll saat halaman pasang iklan aktif
+  useEffect(() => {
+    if (!isOpen) return;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen, onClose]);
+
+  if (!isOpen || typeof document === "undefined") return null;
 
   // Format nomor WhatsApp untuk URL wa.me internasional (+62)
   const rawNumber = settings.whatsappNumber || "085351037179";
@@ -51,16 +71,18 @@ export const HelpContactModal: React.FC<HelpContactModalProps> = ({
     }
   };
 
-  return (
+  return createPortal(
     <div
+      id="pasang-iklan-fullpage-container"
       role="dialog"
       aria-modal="true"
       aria-labelledby="help-page-title"
-      className="fixed inset-0 z-50 bg-neutral-900/40 backdrop-blur-xs flex flex-col w-full h-full overflow-hidden animate-fade-in"
+      className="fixed inset-0 z-[99999] bg-neutral-100 flex justify-center w-full h-full overflow-hidden select-none animate-fade-in"
     >
-      <div className="w-full h-full bg-neutral-50 flex flex-col overflow-hidden">
+      {/* Kolom Halaman Mandiri Penuh (Solid Opaque, Beranda Belakang 100% Tertutup) */}
+      <div className="w-full max-w-md bg-neutral-50 h-full flex flex-col shadow-2xl overflow-hidden relative">
         {/* TOP APP BAR (Sticky Header) */}
-        <header className="bg-gradient-to-r from-[#00632B] via-[#004d22] to-[#003818] text-white px-4 sm:px-8 py-3.5 sm:py-4 flex items-center justify-between shadow-md shrink-0 border-b border-emerald-900/50">
+        <header className="bg-gradient-to-r from-[#00632B] via-[#004d22] to-[#003818] text-white px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between shadow-md shrink-0 border-b border-emerald-900/50 z-20">
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -69,20 +91,20 @@ export const HelpContactModal: React.FC<HelpContactModalProps> = ({
               aria-label="Kembali ke Beranda"
             >
               <ArrowLeft className="w-5 h-5" />
-              <span className="hidden sm:inline">Kembali</span>
+              <span>Kembali</span>
             </button>
 
-            <div className="h-6 w-px bg-white/20 hidden sm:block" />
+            <div className="h-6 w-px bg-white/20" />
 
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-amber-400/20 backdrop-blur-xs border border-amber-300/40 flex items-center justify-center shadow-inner">
-                <Megaphone className="w-5 h-5 text-[#E5A000]" />
+              <div className="w-8 h-8 rounded-xl bg-amber-400/20 backdrop-blur-xs border border-amber-300/40 flex items-center justify-center shadow-inner">
+                <Megaphone className="w-4 h-4 text-[#E5A000]" />
               </div>
               <div>
-                <h1 id="help-page-title" className="text-sm sm:text-base font-extrabold tracking-tight leading-tight">
-                  Layanan Pasang Iklan Sponsor
+                <h1 id="help-page-title" className="text-sm font-extrabold tracking-tight leading-tight">
+                  Pasang Iklan Sponsor
                 </h1>
-                <p className="text-[11px] text-emerald-200 font-medium">
+                <p className="text-[10px] text-emerald-200 font-medium">
                   {settings.adminName || "Admin Resmi Kareba'Ta"}
                 </p>
               </div>
@@ -90,8 +112,8 @@ export const HelpContactModal: React.FC<HelpContactModalProps> = ({
           </div>
         </header>
 
-        {/* MAIN BODY (Scrollable Full Screen Content) */}
-        <main className="flex-1 overflow-y-auto px-4 py-6 sm:py-8">
+        {/* MAIN BODY (Scrollable Standalone Content) */}
+        <main className="flex-1 overflow-y-auto px-4 py-6 sm:py-8 bg-neutral-50">
           <div className="max-w-xl mx-auto space-y-5">
             {/* BADGE HERO KEMITRAAN */}
             <div className="text-center space-y-2 pb-1">
@@ -114,7 +136,7 @@ export const HelpContactModal: React.FC<HelpContactModalProps> = ({
                   Layanan Pasang Iklan Sponsor:
                 </h3>
                 <p className="text-xs sm:text-sm text-amber-950 leading-relaxed font-medium">
-                  Warga atau pemilik UMKM / usaha lokal yang ingin memasang kabar sponsor atau spanduk promosi dapat menghubungi Anda melalui jalur WhatsApp ini.
+                  Warga atau pemilik UMKM / usaha lokal yang ingin memasang kabar sponsor atau spanduk promosi dapat menghubungi Admin melalui jalur WhatsApp resmi.
                 </p>
               </div>
             </div>
@@ -212,6 +234,7 @@ export const HelpContactModal: React.FC<HelpContactModalProps> = ({
           </div>
         </main>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

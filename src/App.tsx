@@ -71,6 +71,7 @@ import { RunningTextBar, BulletinItem } from "./components/RunningTextBar";
 import { CardCarousel } from "./components/CardCarousel";
 import { PullToRefresh } from "./components/PullToRefresh";
 import { AdminDashboard } from "./components/AdminDashboard";
+import { preloadFeedMedia } from "./utils/mediaPreloader";
 import { LoginModal } from "./components/LoginModal";
 import { LoginPage } from "./components/LoginPage";
 import { SetupUsernamePage } from "./components/SetupUsernamePage";
@@ -960,6 +961,29 @@ export default function KarebaFeedFinal() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Matikan 100% semua menu dan gestur bawaan browser (Context Menu, Long-press Popup, Drag Ghosting)
+  useEffect(() => {
+    const handleContextMenu = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable)) {
+        return; // Izinkan hanya pada input formulir untuk keperluan paste/ketik
+      }
+      e.preventDefault();
+    };
+
+    const handleDragStart = (e: DragEvent) => {
+      e.preventDefault();
+    };
+
+    window.addEventListener("contextmenu", handleContextMenu);
+    window.addEventListener("dragstart", handleDragStart);
+
+    return () => {
+      window.removeEventListener("contextmenu", handleContextMenu);
+      window.removeEventListener("dragstart", handleDragStart);
+    };
+  }, []);
+
   // Sinkronisasi postingan real-time dari Firestore proyek pribadi
   useEffect(() => {
     const unsubscribe = listenToFirestorePosts((remotePosts) => {
@@ -1030,6 +1054,24 @@ export default function KarebaFeedFinal() {
       unsubConfig();
     };
   }, []);
+
+  // Preload cerdas media beranda (gambar & video poster) ke memori GPU browser
+  // sehingga saat pengguna menggulir (scroll), media sudah 100% matang tanpa kedipan tirai atau muncul setengah
+  useEffect(() => {
+    const mediaUrls: (string | undefined)[] = [];
+    feed.forEach((f) => {
+      if (f.img) mediaUrls.push(f.img);
+      if (f.thumbnail) mediaUrls.push(f.thumbnail);
+    });
+    if (adSettings?.ads) {
+      adSettings.ads.forEach((ad) => {
+        if (ad.imageUrl) mediaUrls.push(ad.imageUrl);
+      });
+    }
+    if (mediaUrls.length > 0) {
+      preloadFeedMedia(mediaUrls);
+    }
+  }, [feed, adSettings]);
 
   // Fungsi untuk naik kembali ke media di atas dengan animasi halus
   const scrollToTop = () => {
@@ -1895,7 +1937,7 @@ export default function KarebaFeedFinal() {
                 <CheckCircle2 className="w-4 h-4 text-[#00632B] shrink-0" />
                 <span>Berita berhasil di unggah</span>
               </div>
-              <p className="text-xs font-medium text-neutral-800 truncate mt-0.5" title={lastUploadedPost.title}>
+              <p className="text-xs font-medium text-neutral-800 truncate mt-0.5">
                 {lastUploadedPost.title}
               </p>
             </div>
@@ -2046,7 +2088,7 @@ export default function KarebaFeedFinal() {
                         : "bg-neutral-100 hover:bg-neutral-200 text-neutral-700"
                     }`}
                   >
-                    <MapPin className="w-3.5 h-3.5 text-red-500" />
+                    <MapPin className="w-3.5 h-3.5 text-yellow-500" />
                     <span>Lokasi</span>
                   </button>
                   <button
@@ -2070,7 +2112,6 @@ export default function KarebaFeedFinal() {
                   type="button"
                   onClick={scrollToTop}
                   className="flex items-center text-left hover:opacity-80 active:scale-95 transition cursor-pointer"
-                  title="Kembali ke media paling atas"
                   aria-label="Kembali ke media paling atas"
                 >
                   <KarebaTaLogo />
@@ -2094,7 +2135,6 @@ export default function KarebaFeedFinal() {
                     onClick={handleCameraClick}
                     className="p-2 text-neutral-800 hover:text-[#00632B] transition-all duration-150 active:scale-90 flex items-center justify-center cursor-pointer"
                     aria-label="Kamera"
-                    title={currentUser ? "Ambil Foto / Video Kamera" : "Masuk dengan Google untuk menggunakan kamera"}
                   >
                     <CameraIcon className="w-6 h-6" strokeWidth={2} />
                   </button>
@@ -2104,7 +2144,6 @@ export default function KarebaFeedFinal() {
                     onClick={handleGalleryClick}
                     className="p-2 text-neutral-800 hover:text-[#00632B] transition-all duration-150 active:scale-90 flex items-center justify-center cursor-pointer"
                     aria-label="Galeri Media"
-                    title={currentUser ? "Pilih dari Galeri Media" : "Masuk dengan Google untuk mengunggah media"}
                   >
                     <ImageIcon className="w-6 h-6" strokeWidth={2} />
                   </button>
@@ -2122,7 +2161,7 @@ export default function KarebaFeedFinal() {
           />
         </div>
 
-        {/* FITUR TARIK KE BAWAH UNTUK MEMPERBARUI (PULL-TO-REFRESH SEPERTI DI APLIKASI FACEBOOK, BUKAN BAWAAN BROWSER) */}
+        {/* FITUR TARIK/GESER KE BAWAH UNTUK MEMPERBARUI (PULL-TO-REFRESH KUSTOM DENGAN KONTEN TETAP KOKOH TANPA TERGESER TURUN) */}
         <PullToRefresh onRefresh={handlePullRefresh}>
           {/* PROFIL WARGA */}
           <section id="profile-section" className="w-full p-4 flex items-center justify-between bg-white border-b border-neutral-100">
@@ -2144,7 +2183,7 @@ export default function KarebaFeedFinal() {
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 min-w-0">
-                <h2 className="font-bold text-base sm:text-lg text-neutral-900 tracking-tight truncate max-w-[150px] sm:max-w-[200px]" title={currentUser ? userName : "Warga Kareba"}>
+                <h2 className="font-bold text-base sm:text-lg text-neutral-900 tracking-tight truncate max-w-[150px] sm:max-w-[200px]">
                   {currentUser ? userName : "Warga Kareba"}
                 </h2>
                 {currentUser && (
@@ -2157,7 +2196,6 @@ export default function KarebaFeedFinal() {
                     }}
                     className="p-1 rounded-md text-neutral-400 hover:text-[#00632B] hover:bg-neutral-100 transition active:scale-90 cursor-pointer shrink-0"
                     aria-label="Edit nama pengguna"
-                    title="Ubah nama pengguna (maks 13 huruf)"
                   >
                     <Pencil className="w-3.5 h-3.5 text-neutral-500 hover:text-[#00632B]" />
                   </button>
@@ -2181,7 +2219,7 @@ export default function KarebaFeedFinal() {
                     setViewMode("admin");
                   }}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-300 transition active:scale-95 cursor-pointer shadow-2xs"
-                  title="Buka Dasbor Admin Kareba'Ta"
+                  aria-label="Dasbor Admin"
                 >
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
                   <span>Dasbor Admin</span>
@@ -2205,7 +2243,6 @@ export default function KarebaFeedFinal() {
                 onClick={handleLogout}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 rounded-lg border border-rose-200 transition active:scale-95 cursor-pointer"
                 aria-label="Keluar akun Google"
-                title="Keluar dari akun Google"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span>Keluar</span>
@@ -2466,6 +2503,8 @@ export default function KarebaFeedFinal() {
                           <img
                             src={p.thumbnail || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&auto=format&fit=crop&q=80"}
                             alt={p.title}
+                            loading="eager"
+                            decoding="async"
                             draggable={false}
                             onContextMenu={(e) => e.preventDefault()}
                             className="h-20 w-full object-cover rounded-lg pointer-events-none select-none"
@@ -2484,6 +2523,8 @@ export default function KarebaFeedFinal() {
                         <img
                           src={p.img}
                           alt={p.title}
+                          loading="eager"
+                          decoding="async"
                           draggable={false}
                           onContextMenu={(e) => e.preventDefault()}
                           className="h-20 w-full object-cover rounded-lg pointer-events-none select-none"
@@ -2611,7 +2652,7 @@ export default function KarebaFeedFinal() {
               <div className="bg-neutral-50 rounded-xl p-3 border border-neutral-200 focus-within:border-[#00632B] focus-within:bg-white transition space-y-2">
                 <div className="flex items-center justify-between">
                   <label htmlFor="post-location-input" className="text-xs font-bold text-neutral-700 flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-red-500" /> Ketik Lokasi Manual:
+                    <MapPin className="w-3.5 h-3.5 text-yellow-500" /> Ketik Lokasi Manual:
                   </label>
                   <span className={`text-[11px] font-medium ${selectedLocation.length >= 30 ? "text-red-600 font-bold" : "text-neutral-400"}`}>
                     {selectedLocation.length}/30
@@ -2701,8 +2742,8 @@ export default function KarebaFeedFinal() {
                         <UserIcon className="w-3.5 h-3.5" />
                       </div>
                     ) : searchCategory === "location" || searchQuery.toLowerCase().startsWith("lokasi:") ? (
-                      <div className="w-6 h-6 rounded-full bg-red-50 flex items-center justify-center text-red-500 shrink-0">
-                        <MapPin className="w-3.5 h-3.5" />
+                      <div className="w-6 h-6 rounded-full bg-yellow-50 flex items-center justify-center text-yellow-500 shrink-0">
+                        <MapPin className="w-3.5 h-3.5 text-yellow-500" />
                       </div>
                     ) : searchCategory === "news" || searchQuery.toLowerCase().startsWith("berita:") ? (
                       <div className="w-6 h-6 rounded-full bg-emerald-50 flex items-center justify-center text-[#00632B] shrink-0">
@@ -2768,7 +2809,6 @@ export default function KarebaFeedFinal() {
                   onClick={() => setIsHelpOpen(true)}
                   className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-amber-950 bg-gradient-to-r from-amber-100 via-amber-50 to-yellow-100 hover:from-amber-200 hover:to-yellow-200 rounded-xl border border-amber-300/80 shadow-xs transition active:scale-95 cursor-pointer shrink-0 ml-2"
                   aria-label="Layanan Pasang Iklan Sponsor & Promosi UMKM"
-                  title="Layanan Pasang Iklan Sponsor & Promosi UMKM via WhatsApp"
                 >
                   <Megaphone className="w-3.5 h-3.5 text-amber-700" />
                   <span>Pasang Iklan</span>
@@ -2812,7 +2852,7 @@ export default function KarebaFeedFinal() {
                       : "bg-neutral-100 hover:bg-neutral-200 text-neutral-600"
                   }`}
                 >
-                  <MapPin className="w-3 h-3 text-red-500" />
+                  <MapPin className="w-3 h-3 text-yellow-500" />
                   <span>Lokasi Sama</span>
                 </button>
                 <button
@@ -2947,7 +2987,7 @@ export default function KarebaFeedFinal() {
                             setIsSearchSuggestionsOpen(false);
                           }}
                           className="text-sm font-bold text-neutral-900 tracking-tight truncate max-w-[130px] sm:max-w-[180px] hover:text-[#00632B] transition cursor-pointer text-left"
-                          title={`Lihat hanya postingan @${f.user}`}
+                          aria-label={`Lihat hanya postingan @${f.user}`}
                         >
                           {f.user}
                         </button>
@@ -2967,9 +3007,9 @@ export default function KarebaFeedFinal() {
                               setIsSearchSuggestionsOpen(false);
                             }}
                             className="flex items-center gap-0.5 text-neutral-600 font-medium truncate max-w-[180px] hover:text-[#00632B] transition cursor-pointer text-left"
-                            title={`Lihat semua postingan di ${f.location}`}
+                            aria-label={`Lihat semua postingan di ${f.location}`}
                           >
-                            <MapPin className="w-3 h-3 text-red-500 shrink-0 inline" />
+                            <MapPin className="w-3 h-3 text-yellow-500 shrink-0 inline" />
                             <span className="truncate">{f.location}</span>
                           </button>
                         </div>
@@ -3112,7 +3152,7 @@ export default function KarebaFeedFinal() {
                   {/* Ikon Tayangan / View (Fitur Analitik) - Posisi di samping kanan icon Laporkan/Hapus */}
                   <div
                     className="flex items-center gap-1.5 py-1 text-neutral-500 select-none ml-auto sm:ml-0"
-                    title={`${(f.views || 0).toLocaleString("id-ID")} kali dilihat`}
+                    aria-label={`${(f.views || 0).toLocaleString("id-ID")} kali dilihat`}
                   >
                     <Eye className="w-4 h-4 text-neutral-400" />
                     <span>{f.views ? f.views.toLocaleString("id-ID") : 0} dilihat</span>
@@ -3181,7 +3221,6 @@ export default function KarebaFeedFinal() {
             onClick={scrollToTop}
             className="fixed bottom-6 right-5 z-40 bg-neutral-900/90 hover:bg-neutral-900 active:scale-95 text-white pl-3.5 pr-4 py-2.5 rounded-full shadow-2xl backdrop-blur-md border border-neutral-700/60 flex items-center gap-2 transition-all duration-200 cursor-pointer animate-fade-in group"
             aria-label="Kembali ke media paling atas"
-            title="Kembali ke media paling atas"
           >
             <ChevronUp className="w-4 h-4 stroke-[2.5] group-hover:-translate-y-0.5 transition-transform" />
             <span className="text-xs font-semibold tracking-tight">Ke Atas</span>
@@ -3621,7 +3660,7 @@ export default function KarebaFeedFinal() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2 min-w-0">
-                        <span className="text-xs font-bold text-neutral-900 truncate max-w-[150px] sm:max-w-[190px]" title={c.user}>
+                        <span className="text-xs font-bold text-neutral-900 truncate max-w-[150px] sm:max-w-[190px]">
                           {c.user}
                         </span>
                         <span className="text-[10px] text-neutral-400 shrink-0 whitespace-nowrap">

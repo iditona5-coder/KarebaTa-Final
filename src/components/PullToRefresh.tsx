@@ -234,13 +234,8 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({ onRefresh, childre
         </div>
       </div>
 
-      {/* Konten Halaman: bergeser ke bawah sedikit saat ditarik secara elastis */}
-      <div
-        style={{
-          transform: pullDistance > 0 ? `translateY(${Math.min(pullDistance * 0.35, 28)}px)` : "none",
-          transition: isDraggingRef.current ? "none" : "transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1)",
-        }}
-      >
+      {/* Konten Halaman: Tetap kokoh tanpa bergeser sedikitpun */}
+      <div>
         {children}
       </div>
     </div>

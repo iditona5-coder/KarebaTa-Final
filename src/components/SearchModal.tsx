@@ -294,8 +294,8 @@ export const SearchModal: React.FC<SearchModalProps> = ({
               </div>
 
               <div className="flex items-start gap-2.5 p-2.5 bg-white rounded-xl border border-neutral-200/80 shadow-2xs">
-                <div className="w-7 h-7 rounded-lg bg-red-50 flex items-center justify-center shrink-0 mt-0.5">
-                  <MapPin className="w-4 h-4 text-red-500" />
+                <div className="w-7 h-7 rounded-lg bg-yellow-50 flex items-center justify-center shrink-0 mt-0.5">
+                  <MapPin className="w-4 h-4 text-yellow-500" />
                 </div>
                 <div>
                   <strong className="text-neutral-900 block text-xs">Filter Lokasi:</strong>
@@ -413,7 +413,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                   <section className="space-y-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5 text-xs font-bold text-neutral-500 uppercase tracking-wider">
-                        <MapPin className="w-3.5 h-3.5 text-red-500" />
+                        <MapPin className="w-3.5 h-3.5 text-yellow-500" />
                         <span>Lokasi ({matchedLocations.length})</span>
                       </div>
                       <span className="text-[10px] text-neutral-400">Klik untuk melihat semua kabar di lokasi ini</span>
@@ -426,11 +426,11 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                           className="p-3 flex items-center justify-between hover:bg-neutral-100/80 transition cursor-pointer group"
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="w-8 h-8 rounded-full bg-red-50 text-red-500 flex items-center justify-center shrink-0">
-                              <MapPin className="w-4 h-4" />
+                            <div className="w-8 h-8 rounded-full bg-yellow-50 text-yellow-500 flex items-center justify-center shrink-0">
+                              <MapPin className="w-4 h-4 text-yellow-500" />
                             </div>
                             <div className="min-w-0">
-                              <p className="text-xs font-bold text-neutral-900 group-hover:text-red-600 transition truncate">
+                              <p className="text-xs font-bold text-neutral-900 group-hover:text-yellow-600 transition truncate">
                                 {locItem.loc}
                               </p>
                               <p className="text-[11px] text-neutral-500 truncate">
@@ -439,7 +439,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                             </div>
                           </div>
                           <div className="flex items-center gap-2 shrink-0 ml-2">
-                            <span className="text-[10px] font-semibold bg-red-50 text-red-600 px-2 py-0.5 rounded-full whitespace-nowrap">
+                            <span className="text-[10px] font-semibold bg-yellow-50 text-yellow-700 px-2 py-0.5 rounded-full whitespace-nowrap">
                               {locItem.count} kabar
                             </span>
                             <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:translate-x-0.5 transition" />
@@ -492,7 +492,7 @@ export const SearchModal: React.FC<SearchModalProps> = ({
                                   <>
                                     <span>•</span>
                                     <span className="flex items-center gap-0.5 text-neutral-500">
-                                      <MapPin className="w-2.5 h-2.5 text-red-500" />
+                                      <MapPin className="w-2.5 h-2.5 text-yellow-500" />
                                       {post.location}
                                     </span>
                                   </>

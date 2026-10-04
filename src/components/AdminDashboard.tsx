@@ -205,6 +205,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [confirmAdminPassword, setConfirmAdminPassword] = useState("");
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
+  // State Dialog Konfirmasi Kustom (Menggantikan confirm bawaan browser)
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  } | null>(null);
+
   // Pantau Autentikasi Pengguna
   useEffect(() => {
     const unsub = subscribeToAuth((user) => {
@@ -804,7 +812,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               type="button"
               onClick={handleLogout}
               className="p-1.5 text-slate-400 hover:text-rose-400 transition"
-              title="Logout"
+              aria-label="Logout"
             >
               <LogOut className="w-4 h-4" />
             </button>
@@ -1103,11 +1111,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                           <button
                             type="button"
-                            onClick={async () => {
-                              if (confirm(`Yakin ingin memblokir akun @${user.userName}?`)) {
-                                await updateUserByAdmin(user.userName, { status: "banned" });
-                                showToast(`Akun @${user.userName} berhasil diblokir.`);
-                              }
+                            onClick={() => {
+                              setConfirmDialog({
+                                isOpen: true,
+                                title: "Blokir Akun Pengguna",
+                                message: `Yakin ingin memblokir akun @${user.userName}? Akun tidak akan dapat memposting lagi.`,
+                                onConfirm: async () => {
+                                  await updateUserByAdmin(user.userName, { status: "banned" });
+                                  showToast(`Akun @${user.userName} berhasil diblokir.`);
+                                  setConfirmDialog(null);
+                                },
+                              });
                             }}
                             className="px-3 py-1.5 bg-rose-950/60 border border-rose-800/80 hover:bg-rose-900 text-rose-300 text-xs font-bold rounded-lg transition cursor-pointer"
                           >
@@ -1281,7 +1295,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 setEditPostLocation(post.location || "");
                               }}
                               className="p-1.5 bg-slate-800 hover:bg-slate-700 text-sky-400 rounded-lg transition"
-                              title="Edit Postingan"
+                              aria-label="Edit Postingan"
                             >
                               <Edit3 className="w-3.5 h-3.5" />
                             </button>
@@ -1289,15 +1303,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             {/* Tombol Hapus */}
                             <button
                               type="button"
-                              onClick={async () => {
-                                if (confirm("Yakin ingin menghapus postingan ini secara permanen?")) {
-                                  await deletePostFromFirestore(post.id);
-                                  if (post.fileId) await deleteFromImageKit(post.fileId);
-                                  showToast("Postingan berhasil dihapus permanen.");
-                                }
+                              onClick={() => {
+                                setConfirmDialog({
+                                  isOpen: true,
+                                  title: "Hapus Postingan Permanen",
+                                  message: "Yakin ingin menghapus postingan ini secara permanen dari server?",
+                                  onConfirm: async () => {
+                                    await deletePostFromFirestore(post.id);
+                                    if (post.fileId) await deleteFromImageKit(post.fileId);
+                                    showToast("Postingan berhasil dihapus permanen.");
+                                    setConfirmDialog(null);
+                                  },
+                                });
                               }}
                               className="p-1.5 bg-slate-800 hover:bg-rose-950 text-rose-400 rounded-lg transition"
-                              title="Hapus Postingan"
+                              aria-label="Hapus Postingan"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -1449,12 +1469,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               )}
                               <button
                                 type="button"
-                                onClick={async () => {
-                                  if (confirm("Hapus postingan yang dilaporkan ini?")) {
-                                    await deletePostFromFirestore(report.postId);
-                                    await updateReportStatusInFirestore(report.id, "resolved");
-                                    showToast("Postingan pelanggar berhasil dihapus.");
-                                  }
+                                onClick={() => {
+                                  setConfirmDialog({
+                                    isOpen: true,
+                                    title: "Hapus Postingan Pelanggaran",
+                                    message: "Hapus postingan yang dilaporkan ini secara permanen?",
+                                    onConfirm: async () => {
+                                      await deletePostFromFirestore(report.postId);
+                                      await updateReportStatusInFirestore(report.id, "resolved");
+                                      showToast("Postingan pelanggar berhasil dihapus.");
+                                      setConfirmDialog(null);
+                                    },
+                                  });
                                 }}
                                 className="px-3 py-1.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-lg transition"
                               >
@@ -1710,11 +1736,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                         <button
                           type="button"
-                          onClick={async () => {
-                            if (confirm("Hapus iklan ini?")) {
-                              await deleteSponsorAd(ad.id);
-                              showToast("Iklan berhasil dihapus.");
-                            }
+                          onClick={() => {
+                            setConfirmDialog({
+                              isOpen: true,
+                              title: "Hapus Iklan Sponsor",
+                              message: "Yakin ingin menghapus spanduk iklan sponsor ini?",
+                              onConfirm: async () => {
+                                await deleteSponsorAd(ad.id);
+                                showToast("Iklan berhasil dihapus.");
+                                setConfirmDialog(null);
+                              },
+                            });
                           }}
                           className="p-1.5 text-slate-500 hover:text-rose-400"
                         >
@@ -2004,7 +2036,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       window.open(`https://wa.me/${intl}`, "_blank");
                     }}
                     className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl border border-slate-700 transition cursor-pointer flex items-center justify-center gap-1.5"
-                    title="Cek apakah link WhatsApp ini berfungsi"
+                    aria-label="Tes Tautan WhatsApp"
                   >
                     <ExternalLink className="w-4 h-4" />
                     <span>Tes Tautan WhatsApp</span>
@@ -2268,6 +2300,34 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           )}
         </main>
       </div>
+
+      {/* MODAL KONFIRMASI KUSTOM ADMIN (Bebas 100% dari confirm bawaan browser) */}
+      {confirmDialog && confirmDialog.isOpen && (
+        <div className="fixed inset-0 z-[99999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in select-none">
+          <div className="bg-[#0B132B] border border-slate-700/80 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
+            <div className="space-y-1.5">
+              <h3 className="text-base font-bold text-white">{confirmDialog.title}</h3>
+              <p className="text-xs text-slate-300 leading-relaxed">{confirmDialog.message}</p>
+            </div>
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => setConfirmDialog(null)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 transition cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={confirmDialog.onConfirm}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 shadow-lg shadow-rose-600/30 transition cursor-pointer"
+              >
+                Lanjutkan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

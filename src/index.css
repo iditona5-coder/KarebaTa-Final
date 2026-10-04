@@ -24,7 +24,6 @@
 }
 
 html {
-  -webkit-overflow-scrolling: touch;
   overscroll-behavior: none !important;
   overscroll-behavior-y: none !important;
   overscroll-behavior-x: none !important;
@@ -40,7 +39,6 @@ html {
 }
 
 body {
-  -webkit-overflow-scrolling: touch;
   overscroll-behavior: none !important;
   overscroll-behavior-y: none !important;
   overscroll-behavior-x: none !important;
@@ -134,7 +132,6 @@ img, video {
   overscroll-behavior-y: auto !important;
   overscroll-behavior: none !important;
   touch-action: pan-x pan-y !important;
-  -webkit-overflow-scrolling: touch;
 }
 
 #karebata-feed-header {

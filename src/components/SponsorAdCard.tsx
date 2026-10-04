@@ -1,5 +1,5 @@
 import React from "react";
-import { MessageCircle, ExternalLink, Megaphone, MapPin, Info } from "lucide-react";
+import { MessageCircle, ExternalLink, Megaphone, MapPin } from "lucide-react";
 import { SponsorAd } from "../types";
 
 interface SponsorAdCardProps {
@@ -61,35 +61,24 @@ export const SponsorAdCard: React.FC<SponsorAdCardProps> = ({
 
             {ad.location && (
               <p className="text-[11px] text-neutral-500 flex items-center gap-1 truncate mt-0.5">
-                <MapPin className="w-3 h-3 text-amber-700 shrink-0" />
+                <MapPin className="w-3 h-3 text-yellow-500 shrink-0" />
                 <span className="truncate">{ad.location}</span>
               </p>
             )}
           </div>
         </div>
-
-        {/* Tombol Info Pasang Iklan */}
-        {onOpenHelp && (
-          <button
-            type="button"
-            onClick={onOpenHelp}
-            className="text-[11px] font-semibold text-neutral-400 hover:text-amber-700 flex items-center gap-1 transition px-2 py-1 rounded-lg hover:bg-amber-100/50 cursor-pointer shrink-0"
-            title="Ingin pasang iklan usaha Anda di sini? Hubungi Admin"
-          >
-            <Info className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Pasang Iklan</span>
-          </button>
-        )}
       </div>
 
-      {/* GAMBAR BANNER / POSTER IKLAN */}
+      {/* GAMBAR BANNER / POSTER IKLAN (Dimensi stabil anti loncat/kedip) */}
       {ad.imageUrl && (
-        <div className="w-full relative bg-neutral-900 overflow-hidden cursor-pointer group" onClick={handleActionClick}>
+        <div className="w-full relative bg-neutral-900 overflow-hidden cursor-pointer group aspect-[16/9] sm:aspect-[2/1] min-h-[220px] max-h-[460px]" onClick={handleActionClick}>
           <img
             src={ad.imageUrl}
             alt={ad.title}
-            loading="lazy"
-            className="w-full max-h-[460px] object-cover sm:object-contain bg-neutral-950 transition duration-300 group-hover:scale-[1.01]"
+            loading="eager"
+            decoding="async"
+            fetchPriority="high"
+            className="w-full h-full object-cover sm:object-contain bg-neutral-950 transition duration-300 group-hover:scale-[1.01]"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
             <span className="text-white text-xs font-bold drop-shadow">
@@ -134,7 +123,7 @@ export const SponsorAdCard: React.FC<SponsorAdCardProps> = ({
               type="button"
               onClick={onOpenHelp}
               className="text-[11px] font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 px-3 py-2.5 rounded-xl transition cursor-pointer shrink-0"
-              title="Hubungi Admin untuk sewa slot iklan ini"
+              aria-label="Mau Pasang Iklan? Hubungi Admin"
             >
               Mau Pasang Iklan?
             </button>
