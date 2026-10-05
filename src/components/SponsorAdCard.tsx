@@ -13,14 +13,31 @@ export const SponsorAdCard: React.FC<SponsorAdCardProps> = ({
   onOpenHelp,
   onShowToast,
 }) => {
-  const touchTrackRef = useRef({ x: 0, y: 0, moved: false });
+  const touchTrackRef = useRef<{
+    x: number;
+    y: number;
+    startTime: number;
+    moved: boolean;
+    initiated: boolean;
+    blockUntil: number;
+  }>({
+    x: 0,
+    y: 0,
+    startTime: 0,
+    moved: false,
+    initiated: false,
+    blockUntil: 0,
+  });
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (e.touches.length > 0) {
       touchTrackRef.current = {
         x: e.touches[0].clientX,
         y: e.touches[0].clientY,
+        startTime: Date.now(),
         moved: false,
+        initiated: true,
+        blockUntil: touchTrackRef.current.blockUntil,
       };
     }
   };
@@ -29,26 +46,35 @@ export const SponsorAdCard: React.FC<SponsorAdCardProps> = ({
     if (e.touches.length > 0) {
       const dx = Math.abs(e.touches[0].clientX - touchTrackRef.current.x);
       const dy = Math.abs(e.touches[0].clientY - touchTrackRef.current.y);
-      if (dx > 6 || dy > 6) {
+      if (dx > 4 || dy > 4) {
         touchTrackRef.current.moved = true;
+        touchTrackRef.current.blockUntil = Date.now() + 1000;
       }
     }
   };
 
   const handleTouchEnd = () => {
-    if (touchTrackRef.current.moved) {
-      setTimeout(() => {
-        touchTrackRef.current.moved = false;
-      }, 300);
+    const elapsed = Date.now() - touchTrackRef.current.startTime;
+    if (touchTrackRef.current.moved || elapsed > 500) {
+      touchTrackRef.current.blockUntil = Date.now() + 1000;
     }
   };
 
   const handleActionClick = (e: React.MouseEvent) => {
-    if (touchTrackRef.current.moved) {
+    const now = Date.now();
+    const lastScroll = (window as any).__KAREBATA_LAST_SCROLL_TIME__ || 0;
+    if (
+      now - lastScroll < 600 ||
+      now < touchTrackRef.current.blockUntil ||
+      touchTrackRef.current.moved ||
+      !touchTrackRef.current.initiated
+    ) {
       e.preventDefault();
       e.stopPropagation();
+      touchTrackRef.current.initiated = false;
       return;
     }
+    touchTrackRef.current.initiated = false;
     if (ad.actionType === "whatsapp") {
       const cleanPhone = ad.actionTarget.replace(/[^0-9]/g, "");
       let formattedPhone = cleanPhone;
@@ -163,11 +189,20 @@ export const SponsorAdCard: React.FC<SponsorAdCardProps> = ({
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
               onClick={(e) => {
-                if (touchTrackRef.current.moved) {
+                const now = Date.now();
+                const lastScroll = (window as any).__KAREBATA_LAST_SCROLL_TIME__ || 0;
+                if (
+                  now - lastScroll < 600 ||
+                  now < touchTrackRef.current.blockUntil ||
+                  touchTrackRef.current.moved ||
+                  !touchTrackRef.current.initiated
+                ) {
                   e.preventDefault();
                   e.stopPropagation();
+                  touchTrackRef.current.initiated = false;
                   return;
                 }
+                touchTrackRef.current.initiated = false;
                 onOpenHelp();
               }}
               className="text-[11px] font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 px-3 py-2.5 rounded-xl transition cursor-pointer shrink-0"

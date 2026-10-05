@@ -195,6 +195,25 @@ window.addEventListener(
   { passive: false }
 );
 
+// 6. Catat waktu terakhir layar disentuh/digeser atau di-scroll untuk mencegah salah klik pada tombol selama navigasi
+if (typeof window !== 'undefined') {
+  (window as any).__KAREBATA_LAST_SCROLL_TIME__ = 0;
+  window.addEventListener(
+    'scroll',
+    () => {
+      (window as any).__KAREBATA_LAST_SCROLL_TIME__ = Date.now();
+    },
+    { passive: true }
+  );
+  window.addEventListener(
+    'touchmove',
+    () => {
+      (window as any).__KAREBATA_LAST_SCROLL_TIME__ = Date.now();
+    },
+    { passive: true }
+  );
+}
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />

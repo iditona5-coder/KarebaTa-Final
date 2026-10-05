@@ -176,7 +176,21 @@ export default function KarebaFeedFinal() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const uploadSuccessTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const helpBtnTouchRef = useRef<{ x: number; y: number; moved: boolean }>({ x: 0, y: 0, moved: false });
+  const helpBtnTouchRef = useRef<{
+    x: number;
+    y: number;
+    startTime: number;
+    moved: boolean;
+    initiatedOnButton: boolean;
+    blockUntil: number;
+  }>({
+    x: 0,
+    y: 0,
+    startTime: 0,
+    moved: false,
+    initiatedOnButton: false,
+    blockUntil: 0,
+  });
   const [uploadStatus, setUploadStatus] = useState<"idle" | "uploading" | "success">("idle");
   const [lastUploadedPost, setLastUploadedPost] = useState<{
     id: string;
@@ -2787,7 +2801,10 @@ export default function KarebaFeedFinal() {
                       helpBtnTouchRef.current = {
                         x: e.touches[0].clientX,
                         y: e.touches[0].clientY,
+                        startTime: Date.now(),
                         moved: false,
+                        initiatedOnButton: true,
+                        blockUntil: helpBtnTouchRef.current.blockUntil,
                       };
                     }
                   }}
@@ -2795,24 +2812,37 @@ export default function KarebaFeedFinal() {
                     if (e.touches.length > 0) {
                       const dx = Math.abs(e.touches[0].clientX - helpBtnTouchRef.current.x);
                       const dy = Math.abs(e.touches[0].clientY - helpBtnTouchRef.current.y);
-                      if (dx > 6 || dy > 6) {
+                      if (dx > 4 || dy > 4) {
                         helpBtnTouchRef.current.moved = true;
+                        helpBtnTouchRef.current.blockUntil = Date.now() + 1000;
                       }
                     }
                   }}
                   onTouchEnd={() => {
-                    if (helpBtnTouchRef.current.moved) {
-                      setTimeout(() => {
-                        helpBtnTouchRef.current.moved = false;
-                      }, 300);
+                    const elapsed = Date.now() - helpBtnTouchRef.current.startTime;
+                    if (helpBtnTouchRef.current.moved || elapsed > 500) {
+                      helpBtnTouchRef.current.blockUntil = Date.now() + 1000;
                     }
                   }}
                   onClick={(e) => {
-                    if (helpBtnTouchRef.current.moved) {
+                    const now = Date.now();
+                    const lastGlobalScroll = (window as any).__KAREBATA_LAST_SCROLL_TIME__ || 0;
+
+                    // Jika ada aktivitas scroll layar dalam 600ms terakhir, atau jari sempat bergeser > 4px:
+                    // BLOKIR TOTAL KLIK INI AGAR TIDAK TERBUKA SAAT MENGGULIR FEED!
+                    if (
+                      now - lastGlobalScroll < 600 ||
+                      now < helpBtnTouchRef.current.blockUntil ||
+                      helpBtnTouchRef.current.moved ||
+                      !helpBtnTouchRef.current.initiatedOnButton
+                    ) {
                       e.preventDefault();
                       e.stopPropagation();
+                      helpBtnTouchRef.current.initiatedOnButton = false;
                       return;
                     }
+
+                    helpBtnTouchRef.current.initiatedOnButton = false;
                     setIsHelpOpen(true);
                   }}
                   className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-amber-950 bg-gradient-to-r from-amber-100 via-amber-50 to-yellow-100 hover:from-amber-200 hover:to-yellow-200 active:from-amber-300 active:to-yellow-300 rounded-lg border border-amber-300/80 shadow-2xs transition-all active:scale-95 cursor-pointer shrink-0 ml-2"
