@@ -1285,7 +1285,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           </p>
 
                           {report.postText && (
-                            <blockquote className="p-3 bg-black/40 border-l-2 border-amber-400 text-xs text-neutral-600 italic rounded-r-xl">
+                            <blockquote className="p-3 bg-amber-50/70 border-l-2 border-amber-400 text-xs text-neutral-700 italic rounded-r-xl">
                               "{report.postText}"
                             </blockquote>
                           )}

@@ -1838,8 +1838,8 @@ export default function KarebaFeedFinal() {
   }
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-neutral-100 text-neutral-900 flex justify-center selection:bg-[#00632B] selection:text-white">
-      <div id="karebata-feed-app" className="w-full max-w-md max-w-full bg-white min-h-screen pb-8 relative font-sans shadow-sm flex flex-col overflow-x-hidden">
+    <div className="min-h-screen w-full bg-neutral-100 text-neutral-900 flex justify-center selection:bg-[#00632B] selection:text-white">
+      <div id="karebata-feed-app" className="w-full max-w-md bg-white min-h-screen pb-8 relative font-sans shadow-sm flex flex-col">
         {/* INPUT TERSEMBUNYI - INI KUNCINYA, TIDAK KELIHATAN */}
         <input
           id="custom-file-input"
@@ -1871,7 +1871,7 @@ export default function KarebaFeedFinal() {
         {toastMessage && (
           <div
             id="status-toast"
-            className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] max-w-[calc(100vw-32px)] bg-neutral-900/95 backdrop-blur-sm text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 border border-neutral-700 animate-fade-in"
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] max-w-[calc(100%-32px)] bg-neutral-900/95 backdrop-blur-sm text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 border border-neutral-700 animate-fade-in"
           >
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
             <span>{toastMessage}</span>
@@ -1882,7 +1882,7 @@ export default function KarebaFeedFinal() {
         {uploadStatus === "uploading" && (
           <div
             id="uploading-status-banner"
-            className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] max-w-[calc(100vw-32px)] bg-white border border-[#00632B]/30 text-neutral-900 text-xs font-bold px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2.5 animate-pulse"
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] max-w-[calc(100%-32px)] bg-white border border-[#00632B]/30 text-neutral-900 text-xs font-bold px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2.5 animate-pulse"
           >
             <div className="w-4 h-4 border-2 border-[#00632B] border-t-transparent rounded-full animate-spin shrink-0" />
             <span className="text-[#00632B]">Sedang mengunggah media...</span>
@@ -1956,19 +1956,16 @@ export default function KarebaFeedFinal() {
           </div>
         )}
 
-        {/* APP HEADER & PAPAN TEKS BERJALAN DI BAWAH BAR - Bebas getar/goyang saat mentok scroll */}
+        {/* APP HEADER & PAPAN TEKS BERJALAN DI BAWAH BAR - Menempel Kokoh di Atas (Sticky Top) */}
         <div
-          className="sticky top-0 z-40 bg-white w-full max-w-full overflow-hidden"
-          style={{
-            transform: "translateZ(0)",
-            WebkitTransform: "translateZ(0)",
-            backfaceVisibility: "hidden",
-            WebkitBackfaceVisibility: "hidden",
-          }}
+          id="sticky-header-container"
+          className="sticky top-0 z-40 bg-white w-full shadow-xs"
+          style={{ touchAction: "pan-y" }}
         >
           <header
             id="karebata-feed-header"
             className="bg-white border-b border-neutral-200 px-3.5 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between transition-all duration-150 min-h-[53px]"
+            style={{ touchAction: "pan-y" }}
           >
             {isSearchOpen ? (
               /* SAAT PENCARIAN AKTIF: LOGO, ICON KAMERA, DAN ICON MEDIA HILANG, TAMPIL PAPAN PENCARIAN */

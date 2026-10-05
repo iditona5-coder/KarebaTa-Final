@@ -24,7 +24,7 @@
 }
 
 html {
-  overflow-x: hidden !important;
+  overflow-x: clip !important;
   overflow-y: auto !important;
   max-width: 100% !important;
   width: 100% !important;
@@ -41,7 +41,7 @@ html {
 }
 
 body {
-  overflow-x: hidden !important;
+  overflow-x: clip !important;
   overflow-y: auto !important;
   max-width: 100% !important;
   width: 100% !important;
@@ -62,7 +62,7 @@ body {
 }
 
 #root {
-  overflow-x: hidden !important;
+  overflow-x: clip !important;
   max-width: 100% !important;
   width: 100% !important;
   min-height: 100%;
@@ -143,12 +143,23 @@ img, video {
   touch-action: pan-x pan-y !important;
 }
 
-#karebata-feed-header {
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  will-change: transform;
+#sticky-header-container {
+  position: -webkit-sticky !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 40 !important;
+  width: 100% !important;
+  background-color: #ffffff !important;
+  touch-action: pan-y !important;
+  overscroll-behavior-x: none !important;
+}
+
+#karebata-feed-header,
+#running-text-board {
+  touch-action: pan-y !important;
+  overscroll-behavior-x: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
 }
 
 /* Animasi Papan Teks Berjalan (Running Text Marquee) */

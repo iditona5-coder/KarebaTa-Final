@@ -179,8 +179,13 @@ window.addEventListener(
         }
       }
 
-      // Kunci gestur geser mendatar di area atas/header/domain (Y < 130) agar layar tidak bergeser horizontal
-      if (edgeTouchStartY < 130 && Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 8) {
+      // Kunci semua gestur geser mendatar di seluruh area aplikasi kecuali di dalam carousel horizontal
+      const target = e.target as HTMLElement | null;
+      const isInsideCarousel = target?.closest(
+        '.horizontal-scroll-container, [data-card-item], #card-media-carousel, #card-berita-carousel'
+      );
+
+      if (!isInsideCarousel && Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 5) {
         if (e.cancelable) {
           e.preventDefault();
         }
