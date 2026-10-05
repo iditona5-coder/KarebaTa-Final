@@ -24,14 +24,12 @@
 }
 
 html {
-  overflow-x: hidden !important;
+  overflow-x: clip !important;
+  overflow-y: auto !important;
   max-width: 100% !important;
   width: 100% !important;
-  position: relative;
-  overscroll-behavior: none !important;
-  overscroll-behavior-y: none !important;
   overscroll-behavior-x: none !important;
-  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
   -webkit-user-select: none !important;
   -moz-user-select: none !important;
   -ms-user-select: none !important;
@@ -43,14 +41,13 @@ html {
 }
 
 body {
-  overflow-x: hidden !important;
+  overflow-x: clip !important;
+  overflow-y: visible !important;
   max-width: 100% !important;
   width: 100% !important;
-  position: relative;
-  overscroll-behavior: none !important;
-  overscroll-behavior-y: none !important;
+  min-height: 100%;
   overscroll-behavior-x: none !important;
-  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
   -webkit-user-select: none !important;
@@ -64,14 +61,12 @@ body {
 }
 
 #root {
-  overflow-x: hidden !important;
+  overflow-x: clip !important;
   max-width: 100% !important;
   width: 100% !important;
   min-height: 100%;
   position: relative;
-  overscroll-behavior: none !important;
   overscroll-behavior-x: none !important;
-  overscroll-behavior-y: none !important;
   -webkit-user-select: none !important;
   user-select: none !important;
   -webkit-tap-highlight-color: transparent !important;
