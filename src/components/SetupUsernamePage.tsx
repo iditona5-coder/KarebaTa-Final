@@ -57,7 +57,7 @@ export const SetupUsernamePage: React.FC<SetupUsernamePageProps> = ({
 
   return (
     <div
-      className="fixed inset-0 w-full h-full h-[100dvh] max-h-[100dvh] bg-white text-neutral-900 flex flex-col justify-between overflow-y-auto overscroll-none selection:bg-[#E5A000] selection:text-neutral-900"
+      className="fixed inset-0 w-full max-w-full h-full h-[100dvh] max-h-[100dvh] bg-white text-neutral-900 flex flex-col justify-between overflow-y-auto overflow-x-hidden overscroll-none selection:bg-[#E5A000] selection:text-neutral-900"
       style={{
         paddingTop: "env(safe-area-inset-top, 0px)",
         paddingBottom: "env(safe-area-inset-bottom, 0px)",

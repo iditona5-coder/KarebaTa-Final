@@ -191,10 +191,10 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({ onRefresh, childre
   const translateY = isVisible ? Math.min(pullDistance, 70) : -60;
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full max-w-full overflow-x-hidden">
       {/* INDIKATOR PULL-TO-REFRESH DI BAWAH BAR STICKY HEADER */}
       <div
-        className="fixed top-[88px] left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-100 ease-out"
+        className="fixed top-[88px] left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-100 ease-out max-w-[calc(100vw-32px)]"
         style={{
           transform: `translate(-50%, ${translateY}px)`,
           opacity: isRefreshing ? 1 : isVisible ? Math.min(1, Math.max(0, (pullDistance - 25) / 25)) : 0,

@@ -126,12 +126,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [passcodeInput, setPasscodeInput] = useState("");
   const [passcodeError, setPasscodeError] = useState<string | null>(null);
   const [showPasscode, setShowPasscode] = useState(false);
-  // Form Login Email & Password Admin
-  const [loginEmail, setLoginEmail] = useState(PRIMARY_ADMIN_EMAIL);
-  const [loginPassword, setLoginPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [loginError, setLoginError] = useState<string | null>(null);
-  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   // Menu Aktif (10 Menu Lengkap)
   const [activeMenu, setActiveMenu] = useState<AdminMenuKey>("dashboard");
@@ -267,55 +261,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     return currentUser.email?.trim().toLowerCase() === PRIMARY_ADMIN_EMAIL.toLowerCase();
   }, [currentUser]);
 
-  // Handler Login Email & Password
-  const handleLoginSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginError(null);
-    setIsLoggingIn(true);
-    const validPasscode = appConfig.adminPasscode || "123456";
-
-    // Kemudahan akses Admin Utama: Jika memasukkan email admin utama dan password/passcode 123456
-    if (
-      loginEmail.trim().toLowerCase() === PRIMARY_ADMIN_EMAIL.toLowerCase() &&
-      loginPassword.trim() === validPasscode.trim()
-    ) {
-      loginAsSimulatedUser(PRIMARY_ADMIN_EMAIL);
-      sessionStorage.setItem("karebata_admin_passcode_verified", "true");
-      setIsPasscodeVerified(true);
-      showToast("Selamat datang kembali, Admin Utama!");
-      logAdminActivity("LOGIN", `Admin login langsung dengan email & passcode`, PRIMARY_ADMIN_EMAIL);
-      setIsLoggingIn(false);
-      return;
-    }
-
-    try {
-      const res = await loginAdminWithEmailPassword(loginEmail, loginPassword);
-      if (!res.success) {
-        setLoginError(res.error || "Gagal masuk ke akun Admin. Pastikan email dan password/passcode benar.");
-      } else {
-        showToast("Login akun Admin berhasil! Masukkan Admin Passcode.");
-      }
-    } catch {
-      setLoginError("Terjadi kendala saat login. Periksa koneksi internet Anda.");
-    } finally {
-      setIsLoggingIn(false);
-    }
-  };
-
-  // Handler Verifikasi Admin Passcode (PIN Rahasia Tambahan)
+  // Handler Verifikasi PIN Rahasia Admin (Pintu Akses Utama)
   const handlePasscodeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setPasscodeError(null);
-    const validPasscode = appConfig.adminPasscode || "12345";
+    const validPasscode = appConfig.adminPasscode || "123456";
 
     if (passcodeInput.trim() === validPasscode.trim()) {
       sessionStorage.setItem("karebata_admin_passcode_verified", "true");
       setIsPasscodeVerified(true);
+      if (!currentUser || currentUser.email?.trim().toLowerCase() !== PRIMARY_ADMIN_EMAIL.toLowerCase()) {
+        loginAsSimulatedUser(PRIMARY_ADMIN_EMAIL);
+      }
       setPasscodeInput("");
-      showToast("Autentikasi 2-Lapis Berhasil. Selamat datang di Dasbor Admin!");
-      logAdminActivity("LOGIN", `Admin terverifikasi dengan Passcode Rahasia`, currentUser?.email || PRIMARY_ADMIN_EMAIL);
+      showToast("Selamat datang di Dasbor Admin!");
+      logAdminActivity("LOGIN", "Admin berhasil masuk dengan PIN Rahasia", PRIMARY_ADMIN_EMAIL);
     } else {
-      setPasscodeError("Admin Passcode salah! Akses ditolak.");
+      setPasscodeError("PIN Rahasia salah! Akses ditolak.");
     }
   };
 
@@ -323,8 +285,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const handleLogout = async () => {
     sessionStorage.removeItem("karebata_admin_passcode_verified");
     setIsPasscodeVerified(false);
+    setPasscodeInput("");
     await logAdminActivity("LOGOUT", "Admin keluar dari Dashboard", currentUser?.email || PRIMARY_ADMIN_EMAIL);
-    await logoutUser();
     showToast("Anda telah keluar dari Dashboard Admin.");
     onBackToFeed();
   };
@@ -347,10 +309,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     return reportsList.filter((r) => r.status === "pending").length;
   }, [reportsList]);
 
-  // JIKA BELUM LOGIN ATAU PASSCODE BELUM TERVERIFIKASI
-  if (!currentUser || !isEmailAdmin || !isPasscodeVerified) {
+  // JIKA PASSCODE / PIN BELUM TERVERIFIKASI
+  if (!isPasscodeVerified) {
     return (
-      <div className="min-h-screen bg-[#090D16] text-white flex flex-col items-center justify-center p-4 selection:bg-emerald-500 selection:text-white">
+      <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-[#090D16] text-white flex flex-col items-center justify-center p-4 selection:bg-emerald-500 selection:text-white">
         {/* Toast Notifikasi */}
         {toastMessage && (
           <div className="fixed top-5 z-50 bg-emerald-600 text-white font-bold text-xs px-4 py-2.5 rounded-full shadow-2xl animate-fade-in flex items-center gap-2">
@@ -359,221 +321,70 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
         )}
 
-        <div className="w-full max-w-md bg-[#0F172A] border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
-          {/* Logo & Judul Dashboard */}
+        <div className="w-full max-w-sm sm:max-w-md bg-[#0F172A] border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+          {/* Logo & Judul Portal Admin */}
           <div className="text-center space-y-2">
-            <div className="w-14 h-14 bg-gradient-to-tr from-emerald-600 to-teal-400 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-emerald-950 border border-emerald-400/30">
-              <ShieldCheck className="w-8 h-8 text-white" />
+            <div className="w-16 h-16 bg-gradient-to-tr from-emerald-600 to-teal-400 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-emerald-950 border border-emerald-400/30">
+              <ShieldCheck className="w-9 h-9 text-white" />
             </div>
             <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white">
-              Dashboard Admin Kareba'Ta
+              Dasbor Pengelola
             </h1>
             <p className="text-xs text-slate-400">
-              Portal Pengelolaan & Moderasi Khusus Pengelola Utama
+              Masukkan PIN Rahasia Anda untuk membuka Dasbor Admin
             </p>
           </div>
 
-          {/* PERINGATAN JIKA PENGGUNA BIASA MENCOBA MASUK */}
-          {currentUser && !isEmailAdmin && (
-            <div className="p-4 bg-rose-950/80 border border-rose-800 rounded-2xl space-y-2 text-center">
-              <AlertTriangle className="w-6 h-6 text-rose-400 mx-auto" />
-              <h3 className="font-bold text-sm text-rose-200">Akses Ditolak</h3>
-              <p className="text-xs text-rose-300 leading-relaxed">
-                Akun Google Anda (<b>{currentUser.email}</b>) bukan merupakan Admin Utama Kareba'Ta. Pengguna biasa tidak memiliki izin mengakses halaman ini.
-              </p>
-              <div className="pt-2 flex items-center justify-center gap-2">
+          <form onSubmit={handlePasscodeSubmit} className="space-y-4">
+            {passcodeError && (
+              <div className="p-3 bg-rose-950/70 border border-rose-800 rounded-xl text-xs text-rose-300 flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
+                <span>{passcodeError}</span>
+              </div>
+            )}
+
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-bold text-slate-300">
+                  PIN Rahasia Admin
+                </label>
+                <span className="text-[10px] text-slate-400 font-mono">Kode Keamanan</span>
+              </div>
+              <div className="relative">
+                <input
+                  type={showPasscode ? "text" : "password"}
+                  required
+                  maxLength={10}
+                  autoFocus
+                  value={passcodeInput}
+                  onChange={(e) => setPasscodeInput(e.target.value)}
+                  placeholder="Ketik PIN Rahasia..."
+                  className="w-full bg-[#080D1A] border border-slate-700 rounded-xl py-3 pl-10 pr-12 text-sm text-white placeholder:text-slate-500 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none tracking-widest font-mono"
+                />
+                <Key className="w-4 h-4 text-amber-400 absolute left-3 top-3.5" />
                 <button
                   type="button"
-                  onClick={async () => {
-                    await logoutUser();
-                    setCurrentUser(null);
-                  }}
-                  className="px-4 py-1.5 bg-rose-800 hover:bg-rose-700 text-white text-xs font-bold rounded-xl transition cursor-pointer"
+                  onClick={() => setShowPasscode(!showPasscode)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer p-1"
+                  aria-label={showPasscode ? "Sembunyikan PIN" : "Lihat PIN"}
                 >
-                  Ganti Akun Admin
-                </button>
-                <button
-                  type="button"
-                  onClick={onBackToFeed}
-                  className="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl transition cursor-pointer"
-                >
-                  Kembali ke Beranda
+                  {showPasscode ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
                 </button>
               </div>
             </div>
-          )}
 
-          {/* LANGKAH 1: FORM LOGIN EMAIL & PASSWORD ADMIN */}
-          {(!currentUser || !isEmailAdmin) && (
-            <form onSubmit={handleLoginSubmit} className="space-y-4">
-              {loginError && (
-                <div className="p-3 bg-rose-950/70 border border-rose-800 rounded-xl text-xs text-rose-300 flex items-start gap-2">
-                  <AlertTriangle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
-                  <span>{loginError}</span>
-                </div>
-              )}
-
-              <div>
-                <label className="text-xs font-bold text-slate-300 block mb-1.5">
-                  Email Admin Utama
-                </label>
-                <div className="relative">
-                  <input
-                    type="email"
-                    required
-                    value={loginEmail}
-                    onChange={(e) => setLoginEmail(e.target.value)}
-                    placeholder="iditona5@gmail.com"
-                    className="w-full bg-[#080D1A] border border-slate-700 rounded-xl py-2.5 pl-9 pr-3 text-xs text-white focus:outline-none focus:border-emerald-500 transition"
-                  />
-                  <Mail className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-slate-300 block mb-1.5">
-                  Password Admin
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    required
-                    value={loginPassword}
-                    onChange={(e) => setLoginPassword(e.target.value)}
-                    placeholder="Masukkan password admin..."
-                    className="w-full bg-[#080D1A] border border-slate-700 rounded-xl py-2.5 pl-9 pr-10 text-xs text-white focus:outline-none focus:border-emerald-500 transition"
-                  />
-                  <Lock className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-2.5 text-slate-500 hover:text-slate-300"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={isLoggingIn}
-                className="w-full py-2.5 bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-white font-extrabold text-xs rounded-xl shadow-lg shadow-emerald-950 transition active:scale-98 cursor-pointer flex items-center justify-center gap-2"
-              >
-                <Lock className="w-4 h-4" />
-                <span>{isLoggingIn ? "Memverifikasi Kredensial..." : "Masuk ke Akun Admin"}</span>
-              </button>
-
-              <div className="relative flex items-center justify-center my-1.5">
-                <div className="border-t border-slate-800 w-full" />
-                <span className="bg-[#0F172A] px-2.5 text-[10px] text-slate-500 uppercase tracking-wider font-bold shrink-0">atau</span>
-                <div className="border-t border-slate-800 w-full" />
-              </div>
-
-              <button
-                type="button"
-                onClick={async () => {
-                  setIsLoggingIn(true);
-                  try {
-                    const res = await loginWithGoogle();
-                    if (!res.user && res.error?.includes("auth/unauthorized-domain")) {
-                      loginAsSimulatedUser(PRIMARY_ADMIN_EMAIL);
-                    }
-                  } catch {
-                    loginAsSimulatedUser(PRIMARY_ADMIN_EMAIL);
-                  } finally {
-                    setIsLoggingIn(false);
-                  }
-                }}
-                disabled={isLoggingIn}
-                className="w-full py-2.5 px-3 bg-slate-800 hover:bg-slate-700 text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 border border-slate-700 transition cursor-pointer active:scale-98 shadow-sm"
-              >
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <span>Masuk Cepat dengan Akun Google ({PRIMARY_ADMIN_EMAIL})</span>
-              </button>
-            </form>
-          )}
-
-          {/* LANGKAH 2: FORM ADMIN PASSCODE (KUNCI RAHASIA TAMBAHAN) */}
-          {currentUser && isEmailAdmin && !isPasscodeVerified && (
-            <form onSubmit={handlePasscodeSubmit} className="space-y-4 animate-fade-in">
-              <div className="p-3 bg-emerald-950/50 border border-emerald-800/80 rounded-2xl flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs shrink-0">
-                  ADM
-                </div>
-                <div className="min-w-0">
-                  <p className="text-xs font-bold text-white truncate">{currentUser.email}</p>
-                  <p className="text-[11px] text-emerald-400 flex items-center gap-1 font-semibold">
-                    <CheckCircle2 className="w-3 h-3" />
-                    <span>Akun Admin Terverifikasi</span>
-                  </p>
-                </div>
-              </div>
-
-              {passcodeError && (
-                <div className="p-3 bg-rose-950/70 border border-rose-800 rounded-xl text-xs text-rose-300 flex items-start gap-2">
-                  <AlertTriangle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
-                  <span>{passcodeError}</span>
-                </div>
-              )}
-
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-bold text-slate-300">
-                    Admin Passcode (Kunci Rahasia Tambahan)
-                  </label>
-                  <span className="text-[10px] text-slate-400">PIN 6-digit</span>
-                </div>
-                <div className="relative">
-  <input
-    type={showPasscode ? "text" : "password"}
-    required
-    maxLength={10}
-    autoFocus
-    value={passcodeInput}
-    onChange={(e) => setPasscodeInput(e.target.value)}
-    placeholder="Masukkan Passcode Rahasia..."
-    className="w-full bg-[#080D1A] border border-slate-700 rounded-xl py-3 pl-10 pr-12 text-white placeholder:text-slate-500 focus:border-amber-500 focus:ring-amber-500 outline-none"
-  />
-  <Key className="w-4 h-4 text-amber-400 absolute left-3 top-3.5" />
-  <button
-    type="button"
-    onClick={() => setShowPasscode(!showPasscode)}
-    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
-  >
-    {showPasscode ? (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.94 10.94 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.59 9.59 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
-    ) : (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-    )}
-  </button>
-</div>
-                <p className="text-[10px] text-slate-500 mt-1">
-                  * Passcode dapat diubah kapan saja di menu Pengaturan Dashboard.
-                </p>
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-2.5 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-amber-950 transition active:scale-98 cursor-pointer flex items-center justify-center gap-2"
-              >
-                <Key className="w-4 h-4" />
-                <span>Buka Akses Dashboard Admin</span>
-              </button>
-
-              <div className="pt-1 text-center">
-                <button
-                  type="button"
-                  onClick={async () => {
-                    await logoutUser();
-                    setCurrentUser(null);
-                  }}
-                  className="text-xs text-slate-400 hover:text-white transition"
-                >
-                  Keluar dari Sesi
-                </button>
-              </div>
-            </form>
-          )}
+            <button
+              type="submit"
+              className="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-amber-950 transition active:scale-98 cursor-pointer flex items-center justify-center gap-2"
+            >
+              <Key className="w-4 h-4" />
+              <span>Buka Dasbor Admin</span>
+            </button>
+          </form>
 
           {/* Tombol Balik ke Aplikasi Pengguna */}
           <div className="pt-2 border-t border-slate-800 text-center">
@@ -582,7 +393,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               onClick={onBackToFeed}
               className="text-xs text-slate-400 hover:text-emerald-400 font-semibold transition flex items-center justify-center gap-1 mx-auto cursor-pointer"
             >
-              <span>Kembali ke Aplikasi Kabar Warga</span>
+              <span>← Kembali ke Aplikasi Kabar Warga</span>
               <ExternalLink className="w-3 h-3" />
             </button>
           </div>
@@ -595,7 +406,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   // TAMPILAN DASHBOARD ADMIN LENGKAP (10 MENU MATERIAL 3)
   // =========================================================================
   return (
-    <div className="min-h-screen bg-[#080D1A] text-slate-100 flex flex-col lg:flex-row antialiased selection:bg-emerald-500 selection:text-white">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-[#080D1A] text-slate-100 flex flex-col lg:flex-row antialiased selection:bg-emerald-500 selection:text-white">
       {/* Toast Notifikasi */}
       {toastMessage && (
         <div className="fixed top-5 right-5 z-50 bg-emerald-600 text-white font-bold text-xs px-4 py-2.5 rounded-full shadow-2xl animate-fade-in flex items-center gap-2 border border-emerald-400">
@@ -841,7 +652,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <div className="p-4 border-t border-slate-800 bg-[#0A0F1D]">
           <div className="flex items-center justify-between">
             <div className="min-w-0">
-              <p className="text-xs font-bold text-white truncate">{currentUser.email}</p>
+              <p className="text-xs font-bold text-white truncate">{currentUser?.email || PRIMARY_ADMIN_EMAIL}</p>
               <p className="text-[10px] text-emerald-400 font-semibold">Admin Utama</p>
             </div>
             <button

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { X, ShieldCheck, Video, Camera, Copy, Check, ShieldAlert, ArrowRight, UserCheck } from "lucide-react";
+import { X, ShieldCheck, Video, Camera, Copy, Check, ShieldAlert, ArrowRight, UserCheck, Users } from "lucide-react";
 import { KarebaTaLogo } from "./KarebaTaLogo";
 import { loginWithGoogle, loginAsSimulatedUser, PRIMARY_ADMIN_EMAIL } from "../services/firebase";
 
@@ -41,6 +41,11 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       setErrorMessage("Silakan ketik nama pengguna Anda");
       return;
     }
+    const lower = clean.toLowerCase();
+    if (lower === "iditona" || lower === "iditona5" || lower.startsWith("iditona") || lower === "admin" || lower === "pengelola") {
+      setErrorMessage("Nama pengguna ini diproteksi khusus untuk Pemilik / Admin Utama.");
+      return;
+    }
     sessionStorage.setItem("karebata_active_session", "true");
     loginAsSimulatedUser(`${clean.toLowerCase()}@warga.karebata`);
     localStorage.setItem("karebata_username", clean);
@@ -52,11 +57,12 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     setErrorMessage(null);
     setIsDomainError(false);
     try {
+      sessionStorage.setItem("karebata_active_session", "true");
       const res = await loginWithGoogle();
       if (res.user) {
-        sessionStorage.setItem("karebata_active_session", "true");
         onSuccess();
       } else if (res.error) {
+        sessionStorage.removeItem("karebata_active_session");
         if (res.error.includes("popup-closed-by-user")) {
           setErrorMessage("Jendela login Google ditutup. Silakan coba lagi.");
         } else if (res.error.includes("unauthorized-domain") || res.error.includes("auth/unauthorized-domain")) {
@@ -182,23 +188,15 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                 </button>
               </div>
 
-              {/* Tombol Bypass Masuk Cepat */}
+              {/* Tombol Masuk Cepat Sebagai Warga */}
               <div className="pt-1 flex flex-col gap-1.5">
                 <button
                   type="button"
-                  onClick={() => handleQuickPreviewLogin(true)}
-                  className="w-full py-2 px-3 bg-[#00632B] hover:bg-[#004d22] text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 shadow-xs"
-                >
-                  <UserCheck className="w-3.5 h-3.5" />
-                  <span>Masuk Sebagai Admin ({PRIMARY_ADMIN_EMAIL})</span>
-                  <ArrowRight className="w-3.5 h-3.5 ml-auto" />
-                </button>
-                <button
-                  type="button"
                   onClick={() => handleQuickPreviewLogin(false)}
-                  className="w-full py-2 px-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 rounded-xl font-semibold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
+                  className="w-full py-2.5 px-3 bg-[#00632B] hover:bg-[#004f22] text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 shadow-xs"
                 >
-                  <span>Masuk Sebagai Warga (Mode Uji Coba)</span>
+                  <Users className="w-3.5 h-3.5" />
+                  <span>Masuk Sebagai Warga (Mode Pratinjau)</span>
                 </button>
               </div>
             </div>

@@ -56,6 +56,8 @@ import {
   logoutUser,
   saveUserProfile,
   getUserProfile,
+  checkRegisteredUser,
+  saveRegisteredUserProfile,
   listenToHelpSettings,
   listenToAdminAppConfig,
   listenToBannedUsers,
@@ -83,12 +85,6 @@ export default function KarebaFeedFinal() {
   const [loginRedirectMessage, setLoginRedirectMessage] = useState<string | null>(null);
 
   const [userName, setUserName] = useState<string>(() => {
-    try {
-      const saved = localStorage.getItem("karebata_username");
-      if (saved && !saved.includes("@")) {
-        return saved.trim().replace(/^@/, "").slice(0, 13);
-      }
-    } catch {}
     return "warga_kareba";
   });
   const userEmail = currentUser?.email || "warga.kareba@email.com";
@@ -180,6 +176,7 @@ export default function KarebaFeedFinal() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const uploadSuccessTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const helpBtnTouchRef = useRef<{ x: number; y: number; moved: boolean }>({ x: 0, y: 0, moved: false });
   const [uploadStatus, setUploadStatus] = useState<"idle" | "uploading" | "success">("idle");
   const [lastUploadedPost, setLastUploadedPost] = useState<{
     id: string;
@@ -276,15 +273,17 @@ export default function KarebaFeedFinal() {
 
       setCurrentUser(user);
       if (user) {
-        // Cek nama kustom tersimpan jika ada
-        const savedCustomName =
-          localStorage.getItem(`karebata_custom_username_${user.uid}`) ||
-          localStorage.getItem("karebata_username");
-
-        if (savedCustomName && savedCustomName.trim() && !savedCustomName.includes("@") && savedCustomName !== "warga_kareba") {
-          const clean = savedCustomName.trim().replace(/^@/, "").slice(0, 13);
-          setUserName(clean);
-        }
+        checkRegisteredUser(user.email, user.uid).then((res) => {
+          if (res.isRegistered && res.username) {
+            setUserName(res.username);
+          } else {
+            setUserName("warga_kareba");
+          }
+        }).catch(() => {
+          setUserName("warga_kareba");
+        });
+      } else {
+        setUserName("warga_kareba");
       }
     });
     return () => unsubAuth();
@@ -348,8 +347,8 @@ export default function KarebaFeedFinal() {
   };
 
   // Callback saat user berhasil login Google:
-  // - Pengguna lama (sudah punya nama tersimpan): tidak perlu ngetik nama lagi, langsung masuk beranda!
-  // - Pengguna baru (belum pernah simpan nama): wajib ngetik nama terlebih dahulu di halaman ngetik nama.
+  // - Pengguna lama (email/akun sudah pernah terdaftar): tidak perlu ngetik nama lagi, langsung masuk beranda!
+  // - Pengguna baru (email/akun belum pernah terdaftar): WAJIB masuk halaman ngetik nama terlebih dahulu, baru muncul aplikasi!
   const handleLoginSuccess = async (loggedInUser?: User | null) => {
     if (typeof window !== "undefined") {
       sessionStorage.setItem("karebata_active_session", "true");
@@ -362,50 +361,31 @@ export default function KarebaFeedFinal() {
       setCurrentUser(activeUser);
     }
 
-    // Cek apakah pengguna sudah memiliki nama tersimpan sebelumnya
-    let existingName: string | null = null;
-    if (activeUser?.uid) {
-      const userKeyName = localStorage.getItem(`karebata_custom_username_${activeUser.uid}`);
-      if (userKeyName && userKeyName.trim() && userKeyName !== "warga_kareba" && !userKeyName.includes("@")) {
-        existingName = userKeyName.trim();
-      }
-    }
-
-    if (!existingName) {
-      const generalName = localStorage.getItem("karebata_username");
-      if (generalName && generalName.trim() && generalName !== "warga_kareba" && !generalName.includes("@")) {
-        existingName = generalName.trim();
-      }
-    }
-
-    // Cek juga dari database Firestore jika belum ada di browser ini
-    if (!existingName && activeUser?.uid) {
-      const remoteName = await getUserProfile(activeUser.uid);
-      if (remoteName && remoteName.trim()) {
-        existingName = remoteName.trim();
-        localStorage.setItem(`karebata_custom_username_${activeUser.uid}`, remoteName.trim());
-        localStorage.setItem("karebata_username", remoteName.trim());
-      }
-    }
-
-    // Jika aksi ini berasal dari pengguna "Kabar Warga" yang mengklik icon media atau kamera:
-    // Sesuai aturan: harus login dulu -> terus ngetik nama -> terus kembali ke beranda!
-    if (pendingUploadAction) {
-      if (existingName) {
-        setUserName(existingName.replace(/^@/, "").slice(0, 13));
-      }
-      setViewMode("set_name");
+    if (!activeUser) {
+      setViewMode("login");
       return;
     }
 
-    if (existingName) {
-      // PENGGUNA LAMA (LOGIN LANGSUNG DARI AWAL): SUDAH ADA NAMA, LANGSUNG MASUK BERANDA
-      const clean = existingName.replace(/^@/, "").slice(0, 13);
+    const email = activeUser.email || "";
+    const uid = activeUser.uid || "";
+
+    // Periksa status pendaftaran akun Google ini di database
+    const checkRes = await checkRegisteredUser(email, uid);
+
+    if (checkRes.isRegistered && checkRes.username) {
+      // 1. AKUN SUDAH TERDAFTAR SEBELUMNYA:
+      // Sesuai permintaan pengguna:
+      // "kecuali sudah terdaftar email akun sebelum nya tinggal masuk email saja tidak perlu tulisan nama"
+      const clean = checkRes.username;
       setUserName(clean);
       setViewMode("feed");
       showToast(`Selamat datang kembali, @${clean}!`);
     } else {
-      // PENGGUNA BARU: BELUM ADA NAMA, WAJIB KETIK NAMA TERLEBIH DAHULU
+      // 2. AKUN BARU ATAU GANTI KE AKUN LAIN YANG BELUM TERDAFTAR:
+      // Sesuai permintaan pengguna:
+      // "ketika orang login google setelah itu masuk halaman tulisan nama pengguna terus baru muncul halaman aplikasi,
+      // dan ketika ganti akun tetap ada nulis nama lagi pokok nya setia ganti akun lain akun atao login google selaluka ada tulis nama"
+      setUserName("warga_kareba");
       setViewMode("set_name");
     }
   };
@@ -421,10 +401,8 @@ export default function KarebaFeedFinal() {
 
     setUserName(cleanName);
     if (currentUser?.uid) {
-      localStorage.setItem(`karebata_custom_username_${currentUser.uid}`, cleanName);
-      saveUserProfile(currentUser.uid, cleanName).catch(() => {});
+      saveRegisteredUserProfile(currentUser.uid, cleanName, currentUser.email).catch(() => {});
     }
-    localStorage.setItem("karebata_username", cleanName);
 
     // Perbarui postingan lokal agar langsung memakai nama yang diketik
     const cleanInitial = (cleanName[0] || "W").toUpperCase();
@@ -443,8 +421,9 @@ export default function KarebaFeedFinal() {
       )
     );
 
+    // SETELAH SIMPAN NAMA -> BARU MUNCUL HALAMAN APLIKASI (BERANDA)!
     setViewMode("feed");
-    showToast(`Nama pengguna disetel: @${cleanName}`);
+    showToast(`Nama pengguna berhasil disetel: @${cleanName}`);
 
     const action = pendingUploadAction;
     setPendingUploadAction(null);
@@ -476,6 +455,7 @@ export default function KarebaFeedFinal() {
       setUserName("warga_kareba");
       sessionStorage.removeItem("kareba_guest_mode");
       sessionStorage.removeItem("karebata_active_session");
+      localStorage.removeItem("karebata_username");
       setViewMode("login");
       showToast("Berhasil keluar dari akun. Sesi diamankan.");
     }
@@ -1858,8 +1838,8 @@ export default function KarebaFeedFinal() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-100 text-neutral-900 flex justify-center selection:bg-[#00632B] selection:text-white">
-      <div id="karebata-feed-app" className="w-full max-w-md bg-white min-h-screen pb-8 relative font-sans shadow-sm flex flex-col">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-neutral-100 text-neutral-900 flex justify-center selection:bg-[#00632B] selection:text-white">
+      <div id="karebata-feed-app" className="w-full max-w-md bg-white min-h-screen pb-8 relative font-sans shadow-sm flex flex-col overflow-x-hidden">
         {/* INPUT TERSEMBUNYI - INI KUNCINYA, TIDAK KELIHATAN */}
         <input
           id="custom-file-input"
@@ -1891,7 +1871,7 @@ export default function KarebaFeedFinal() {
         {toastMessage && (
           <div
             id="status-toast"
-            className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] bg-neutral-900/95 backdrop-blur-sm text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 border border-neutral-700 animate-fade-in"
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] max-w-[calc(100vw-32px)] bg-neutral-900/95 backdrop-blur-sm text-white text-xs font-semibold px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2 border border-neutral-700 animate-fade-in"
           >
             <CheckCircle2 className="w-4 h-4 text-emerald-400" />
             <span>{toastMessage}</span>
@@ -1902,7 +1882,7 @@ export default function KarebaFeedFinal() {
         {uploadStatus === "uploading" && (
           <div
             id="uploading-status-banner"
-            className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] bg-white border border-[#00632B]/30 text-neutral-900 text-xs font-bold px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2.5 animate-pulse"
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-[60] max-w-[calc(100vw-32px)] bg-white border border-[#00632B]/30 text-neutral-900 text-xs font-bold px-4 py-2.5 rounded-full shadow-2xl flex items-center gap-2.5 animate-pulse"
           >
             <div className="w-4 h-4 border-2 border-[#00632B] border-t-transparent rounded-full animate-spin shrink-0" />
             <span className="text-[#00632B]">Sedang mengunggah media...</span>
@@ -1978,7 +1958,7 @@ export default function KarebaFeedFinal() {
 
         {/* APP HEADER & PAPAN TEKS BERJALAN DI BAWAH BAR - Bebas getar/goyang saat mentok scroll */}
         <div
-          className="sticky top-0 z-40 bg-white"
+          className="sticky top-0 z-40 bg-white w-full max-w-full overflow-x-hidden"
           style={{
             transform: "translateZ(0)",
             WebkitTransform: "translateZ(0)",
@@ -2218,11 +2198,10 @@ export default function KarebaFeedFinal() {
                     }
                     setViewMode("admin");
                   }}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-300 transition active:scale-95 cursor-pointer shadow-2xs"
-                  aria-label="Dasbor Admin"
+                  className="p-1.5 text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded-lg border border-emerald-200/80 transition active:scale-90 cursor-pointer shadow-2xs flex items-center justify-center"
+                  aria-label="Khusus"
                 >
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>Dasbor Admin</span>
+                  <ShieldCheck className="w-4 h-4 text-emerald-700" />
                 </button>
               )}
               <button
@@ -2806,11 +2785,43 @@ export default function KarebaFeedFinal() {
                 <button
                   id="help-kabar-warga-btn"
                   type="button"
-                  onClick={() => setIsHelpOpen(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-amber-950 bg-gradient-to-r from-amber-100 via-amber-50 to-yellow-100 hover:from-amber-200 hover:to-yellow-200 rounded-xl border border-amber-300/80 shadow-xs transition active:scale-95 cursor-pointer shrink-0 ml-2"
+                  onTouchStart={(e) => {
+                    if (e.touches.length > 0) {
+                      helpBtnTouchRef.current = {
+                        x: e.touches[0].clientX,
+                        y: e.touches[0].clientY,
+                        moved: false,
+                      };
+                    }
+                  }}
+                  onTouchMove={(e) => {
+                    if (e.touches.length > 0) {
+                      const dx = Math.abs(e.touches[0].clientX - helpBtnTouchRef.current.x);
+                      const dy = Math.abs(e.touches[0].clientY - helpBtnTouchRef.current.y);
+                      if (dx > 6 || dy > 6) {
+                        helpBtnTouchRef.current.moved = true;
+                      }
+                    }
+                  }}
+                  onTouchEnd={() => {
+                    if (helpBtnTouchRef.current.moved) {
+                      setTimeout(() => {
+                        helpBtnTouchRef.current.moved = false;
+                      }, 300);
+                    }
+                  }}
+                  onClick={(e) => {
+                    if (helpBtnTouchRef.current.moved) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      return;
+                    }
+                    setIsHelpOpen(true);
+                  }}
+                  className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-amber-950 bg-gradient-to-r from-amber-100 via-amber-50 to-yellow-100 hover:from-amber-200 hover:to-yellow-200 active:from-amber-300 active:to-yellow-300 rounded-lg border border-amber-300/80 shadow-2xs transition-all active:scale-95 cursor-pointer shrink-0 ml-2"
                   aria-label="Layanan Pasang Iklan Sponsor & Promosi UMKM"
                 >
-                  <Megaphone className="w-3.5 h-3.5 text-amber-700" />
+                  <Megaphone className="w-3 h-3 text-amber-700" />
                   <span>Pasang Iklan</span>
                 </button>
               )}
@@ -3516,6 +3527,7 @@ export default function KarebaFeedFinal() {
                           setUserName(trimmed);
                           if (currentUser) {
                             localStorage.setItem(`karebata_custom_username_${currentUser.uid}`, trimmed);
+                            saveUserProfile(currentUser.uid, trimmed).catch(() => {});
                           }
                           localStorage.setItem("karebata_username", trimmed);
                           const cleanInit = (trimmed[0] || "W").toUpperCase();
@@ -3565,6 +3577,7 @@ export default function KarebaFeedFinal() {
                       setUserName(trimmed);
                       if (currentUser) {
                         localStorage.setItem(`karebata_custom_username_${currentUser.uid}`, trimmed);
+                        saveUserProfile(currentUser.uid, trimmed).catch(() => {});
                       }
                       localStorage.setItem("karebata_username", trimmed);
                       const cleanInit = (trimmed[0] || "W").toUpperCase();

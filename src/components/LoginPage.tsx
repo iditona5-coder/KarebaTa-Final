@@ -36,11 +36,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     setErrorMessage(null);
     setIsDomainError(false);
     try {
+      sessionStorage.setItem("karebata_active_session", "true");
       const res = await loginWithGoogle();
       if (res.user) {
-        sessionStorage.setItem("karebata_active_session", "true");
         onLoginSuccess(res.user);
       } else if (res.error) {
+        sessionStorage.removeItem("karebata_active_session");
         if (res.error.includes("popup-closed-by-user")) {
           setErrorMessage("Jendela masuk Google ditutup. Silakan coba kembali.");
         } else if (res.error.includes("unauthorized-domain") || res.error.includes("auth/unauthorized-domain")) {
@@ -146,22 +147,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               </button>
             </div>
 
-            {/* Tombol Bypass Masuk Cepat */}
+            {/* Tombol Masuk Cepat Sebagai Warga */}
             <div className="pt-1 flex flex-col gap-1.5">
               <button
                 type="button"
-                onClick={() => handleQuickPreviewLogin(true)}
+                onClick={() => handleQuickPreviewLogin(false)}
                 className="w-full py-2.5 px-3 bg-[#00632B] hover:bg-[#004f22] text-white rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer active:scale-95 shadow-xs"
               >
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Masuk Cepat Sebagai Admin ({PRIMARY_ADMIN_EMAIL})</span>
-                <ArrowRight className="w-3.5 h-3.5 ml-auto" />
-              </button>
-              <button
-                type="button"
-                onClick={() => handleQuickPreviewLogin(false)}
-                className="w-full py-2 px-3 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 rounded-xl font-semibold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
-              >
+                <Users className="w-3.5 h-3.5" />
                 <span>Masuk Cepat Sebagai Warga</span>
               </button>
             </div>

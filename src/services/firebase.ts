@@ -16,6 +16,8 @@ import {
   query,
   orderBy,
   limit,
+  where,
+  getDocs,
   serverTimestamp,
   arrayUnion,
   arrayRemove,
@@ -589,42 +591,151 @@ export async function deleteReportFromFirestore(reportId: string): Promise<boole
 }
 
 /**
- * Simpan nama profil pengguna warga ke Firestore
+ * Periksa apakah akun Google (berdasarkan Email atau UID) sudah pernah terdaftar di Kareba'Ta
  */
-export async function saveUserProfile(uid: string, username: string): Promise<boolean> {
-  if (!db) return false;
+export async function checkRegisteredUser(
+  email?: string | null,
+  uid?: string | null
+): Promise<{ isRegistered: boolean; username: string | null }> {
+  const cleanEmail = (email || '').trim().toLowerCase();
+  const cleanUid = (uid || '').trim();
+
+  // 1. Cek cache lokal terlebih dahulu untuk kecepatan instan
+  if (cleanEmail) {
+    const localCached = localStorage.getItem(`karebata_registered_${cleanEmail}`);
+    if (localCached && localCached.trim() && localCached !== 'warga_kareba') {
+      return { isRegistered: true, username: localCached.trim().slice(0, 13) };
+    }
+  }
+  if (cleanUid) {
+    const localCachedUid = localStorage.getItem(`karebata_custom_username_${cleanUid}`);
+    if (localCachedUid && localCachedUid.trim() && localCachedUid !== 'warga_kareba') {
+      return { isRegistered: true, username: localCachedUid.trim().slice(0, 13) };
+    }
+  }
+
+  if (!db) {
+    return { isRegistered: false, username: null };
+  }
+
   try {
-    const userRef = doc(db, 'users', uid);
-    await setDoc(userRef, {
-      username: username.trim().slice(0, 13),
-      updatedAt: serverTimestamp()
-    }, { merge: true });
+    // 2. Cek dokumen di Firestore users collection berdasarkan email key
+    if (cleanEmail) {
+      const emailDocId = 'email_' + cleanEmail.replace(/[^a-zA-Z0-9]/g, '_');
+      const emailSnap = await getDoc(doc(db, 'users', emailDocId));
+      if (emailSnap.exists()) {
+        const d = emailSnap.data();
+        const uname = d?.username || d?.userName || d?.displayName;
+        if (uname && typeof uname === 'string' && uname.trim() && uname.trim() !== 'warga_kareba') {
+          const cleanUname = uname.trim().slice(0, 13);
+          localStorage.setItem(`karebata_registered_${cleanEmail}`, cleanUname);
+          return { isRegistered: true, username: cleanUname };
+        }
+      }
+    }
+
+    // 3. Cek dokumen di Firestore users collection berdasarkan UID
+    if (cleanUid) {
+      const uidSnap = await getDoc(doc(db, 'users', cleanUid));
+      if (uidSnap.exists()) {
+        const d = uidSnap.data();
+        const uname = d?.username || d?.userName || d?.displayName;
+        if (uname && typeof uname === 'string' && uname.trim() && uname.trim() !== 'warga_kareba') {
+          const cleanUname = uname.trim().slice(0, 13);
+          if (cleanEmail) localStorage.setItem(`karebata_registered_${cleanEmail}`, cleanUname);
+          localStorage.setItem(`karebata_custom_username_${cleanUid}`, cleanUname);
+          return { isRegistered: true, username: cleanUname };
+        }
+      }
+    }
+
+    // 4. Query koleksi users jika dokumen email spesifik belum ada
+    if (cleanEmail) {
+      const q = query(collection(db, 'users'), where('email', '==', cleanEmail), limit(1));
+      const qSnap = await getDocs(q);
+      if (!qSnap.empty) {
+        const d = qSnap.docs[0].data();
+        const uname = d?.username || d?.userName || d?.displayName;
+        if (uname && typeof uname === 'string' && uname.trim() && uname.trim() !== 'warga_kareba') {
+          const cleanUname = uname.trim().slice(0, 13);
+          localStorage.setItem(`karebata_registered_${cleanEmail}`, cleanUname);
+          return { isRegistered: true, username: cleanUname };
+        }
+      }
+    }
+
+    return { isRegistered: false, username: null };
+  } catch (err) {
+    console.warn('[Firebase] Gagal cek status pendaftaran akun:', err);
+    return { isRegistered: false, username: null };
+  }
+}
+
+/**
+ * Daftarkan dan simpan profil pengguna baru ke Firestore
+ */
+export async function saveRegisteredUserProfile(
+  uid: string,
+  username: string,
+  email?: string | null
+): Promise<boolean> {
+  const cleanUsername = username.trim().replace(/^@/, '').slice(0, 13);
+  const cleanEmail = (email || '').trim().toLowerCase();
+
+  // Simpan ke cache lokal
+  if (cleanEmail) {
+    localStorage.setItem(`karebata_registered_${cleanEmail}`, cleanUsername);
+  }
+  if (uid) {
+    localStorage.setItem(`karebata_custom_username_${uid}`, cleanUsername);
+  }
+  localStorage.setItem('karebata_username', cleanUsername);
+
+  if (!db) return true;
+
+  try {
+    const payload = {
+      uid,
+      email: cleanEmail,
+      username: cleanUsername,
+      userName: cleanUsername,
+      displayName: cleanUsername,
+      updatedAt: serverTimestamp(),
+      createdAtServer: serverTimestamp()
+    };
+
+    // 1. Simpan di doc(db, 'users', uid)
+    if (uid) {
+      await setDoc(doc(db, 'users', uid), payload, { merge: true });
+    }
+
+    // 2. Simpan juga index berdasarkan email di doc(db, 'users', emailDocId)
+    // agar jika user login di HP/browser lain dengan email yang sama, langsung terdeteksi terdaftar!
+    if (cleanEmail) {
+      const emailDocId = 'email_' + cleanEmail.replace(/[^a-zA-Z0-9]/g, '_');
+      await setDoc(doc(db, 'users', emailDocId), payload, { merge: true });
+    }
+
     return true;
   } catch (err) {
-    console.error('[Firebase] Gagal simpan profil warga:', err);
+    console.error('[Firebase] Gagal simpan pendaftaran pengguna:', err);
     return false;
   }
 }
 
 /**
- * Ambil nama profil pengguna warga dari Firestore
+ * Simpan nama profil pengguna warga ke Firestore (kompatibilitas)
  */
-export async function getUserProfile(uid: string): Promise<string | null> {
-  if (!db) return null;
-  try {
-    const userRef = doc(db, 'users', uid);
-    const snap = await getDoc(userRef);
-    if (snap.exists()) {
-      const data = snap.data();
-      if (data?.username && typeof data.username === 'string') {
-        return data.username.trim().slice(0, 13);
-      }
-    }
-    return null;
-  } catch (err) {
-    console.warn('[Firebase] Gagal ambil profil warga:', err);
-    return null;
-  }
+export async function saveUserProfile(uid: string, username: string, email?: string): Promise<boolean> {
+  return saveRegisteredUserProfile(uid, username, email);
+}
+
+/**
+ * Ambil nama profil pengguna warga dari Firestore (kompatibilitas)
+ */
+export async function getUserProfile(uid: string, email?: string): Promise<string | null> {
+  const res = await checkRegisteredUser(email, uid);
+  return res.username;
 }
 
 /**

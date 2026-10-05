@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { MessageCircle, ExternalLink, Megaphone, MapPin } from "lucide-react";
 import { SponsorAd } from "../types";
 
@@ -13,7 +13,42 @@ export const SponsorAdCard: React.FC<SponsorAdCardProps> = ({
   onOpenHelp,
   onShowToast,
 }) => {
-  const handleActionClick = () => {
+  const touchTrackRef = useRef({ x: 0, y: 0, moved: false });
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length > 0) {
+      touchTrackRef.current = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+        moved: false,
+      };
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length > 0) {
+      const dx = Math.abs(e.touches[0].clientX - touchTrackRef.current.x);
+      const dy = Math.abs(e.touches[0].clientY - touchTrackRef.current.y);
+      if (dx > 6 || dy > 6) {
+        touchTrackRef.current.moved = true;
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (touchTrackRef.current.moved) {
+      setTimeout(() => {
+        touchTrackRef.current.moved = false;
+      }, 300);
+    }
+  };
+
+  const handleActionClick = (e: React.MouseEvent) => {
+    if (touchTrackRef.current.moved) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
     if (ad.actionType === "whatsapp") {
       const cleanPhone = ad.actionTarget.replace(/[^0-9]/g, "");
       let formattedPhone = cleanPhone;
@@ -103,6 +138,9 @@ export const SponsorAdCard: React.FC<SponsorAdCardProps> = ({
         <div className="pt-1 flex items-center justify-between gap-3">
           <button
             type="button"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
             onClick={handleActionClick}
             className={`flex-1 py-2.5 px-4 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-sm transition active:scale-98 cursor-pointer ${
               ad.actionType === "whatsapp"
@@ -121,7 +159,17 @@ export const SponsorAdCard: React.FC<SponsorAdCardProps> = ({
           {onOpenHelp && (
             <button
               type="button"
-              onClick={onOpenHelp}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onClick={(e) => {
+                if (touchTrackRef.current.moved) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  return;
+                }
+                onOpenHelp();
+              }}
               className="text-[11px] font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 px-3 py-2.5 rounded-xl transition cursor-pointer shrink-0"
               aria-label="Mau Pasang Iklan? Hubungi Admin"
             >
