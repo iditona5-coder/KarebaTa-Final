@@ -1838,8 +1838,8 @@ export default function KarebaFeedFinal() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-neutral-100 text-neutral-900 flex justify-center selection:bg-[#00632B] selection:text-white">
-      <div id="karebata-feed-app" className="w-full max-w-md bg-white min-h-screen pb-8 relative font-sans shadow-sm flex flex-col">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-neutral-100 text-neutral-900 flex justify-center selection:bg-[#00632B] selection:text-white">
+      <div id="karebata-feed-app" className="w-full max-w-md max-w-full bg-white min-h-screen pb-8 relative font-sans shadow-sm flex flex-col overflow-x-hidden">
         {/* INPUT TERSEMBUNYI - INI KUNCINYA, TIDAK KELIHATAN */}
         <input
           id="custom-file-input"
@@ -1958,7 +1958,7 @@ export default function KarebaFeedFinal() {
 
         {/* APP HEADER & PAPAN TEKS BERJALAN DI BAWAH BAR - Bebas getar/goyang saat mentok scroll */}
         <div
-          className="sticky top-0 z-40 bg-white w-full"
+          className="sticky top-0 z-40 bg-white w-full max-w-full overflow-hidden"
           style={{
             transform: "translateZ(0)",
             WebkitTransform: "translateZ(0)",
@@ -2035,7 +2035,7 @@ export default function KarebaFeedFinal() {
                 </div>
 
                 {/* TAB FILTER KATEGORI: SEMUA | AKUN | LOKASI | BERITA */}
-                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+                <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 overscroll-x-contain">
                   <button
                     type="button"
                     onClick={() => setSearchCategory("all")}

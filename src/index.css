@@ -24,7 +24,7 @@
 }
 
 html {
-  overflow-x: clip !important;
+  overflow-x: hidden !important;
   overflow-y: auto !important;
   max-width: 100% !important;
   width: 100% !important;
@@ -41,11 +41,12 @@ html {
 }
 
 body {
-  overflow-x: clip !important;
-  overflow-y: visible !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
   max-width: 100% !important;
   width: 100% !important;
   min-height: 100%;
+  position: relative;
   overscroll-behavior-x: none !important;
   -webkit-overflow-scrolling: touch;
   -webkit-text-size-adjust: 100%;
@@ -61,7 +62,7 @@ body {
 }
 
 #root {
-  overflow-x: clip !important;
+  overflow-x: hidden !important;
   max-width: 100% !important;
   width: 100% !important;
   min-height: 100%;

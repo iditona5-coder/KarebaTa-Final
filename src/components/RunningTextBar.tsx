@@ -150,6 +150,7 @@ export const RunningTextBar: React.FC<RunningTextBarProps> = ({
       <div
         id="running-text-board"
         className="w-full max-w-full bg-neutral-900 border-b border-neutral-800 text-white flex items-center h-7 sm:h-7.5 overflow-hidden relative select-none shadow-2xs z-30"
+        style={{ touchAction: "pan-y" }}
       >
         {/* Label Badge Statis Kiri - Merah Kontras Modern */}
         <div className="bg-red-600 text-white h-full px-2 sm:px-2.5 flex items-center gap-1.5 shrink-0 z-20 font-black text-[9px] sm:text-[10px] tracking-wider uppercase shadow-xs pointer-events-none">

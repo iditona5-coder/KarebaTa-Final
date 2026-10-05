@@ -178,6 +178,13 @@ window.addEventListener(
           e.preventDefault();
         }
       }
+
+      // Kunci gestur geser mendatar di area atas/header/domain (Y < 130) agar layar tidak bergeser horizontal
+      if (edgeTouchStartY < 130 && Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 8) {
+        if (e.cancelable) {
+          e.preventDefault();
+        }
+      }
     }
   },
   { passive: false }
