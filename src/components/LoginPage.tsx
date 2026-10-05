@@ -73,17 +73,23 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   };
 
   return (
-    <div className="min-h-screen w-full bg-white text-neutral-900 flex flex-col justify-between selection:bg-[#E5A000] selection:text-neutral-900">
+    <div
+      className="fixed inset-0 w-full h-full h-[100dvh] max-h-[100dvh] bg-white text-neutral-900 flex flex-col justify-between overflow-hidden touch-none select-none overscroll-none selection:bg-[#E5A000] selection:text-neutral-900"
+      style={{
+        paddingTop: "env(safe-area-inset-top, 0px)",
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
+      }}
+    >
       {/* Spacer Header */}
-      <div className="h-4 sm:h-6" />
+      <div className="h-2 sm:h-4 shrink-0" />
 
       {/* Main Content Area */}
-      <main className="w-full max-w-sm sm:max-w-md mx-auto px-6 py-4 flex-1 flex flex-col justify-center">
+      <main className="w-full max-w-sm sm:max-w-md mx-auto px-6 py-2 my-auto flex flex-col justify-center shrink-0">
         {/* Logo Showcase dengan Gaya Bersih & Elegan */}
-        <div className="flex flex-col items-center text-center mb-6">
+        <div className="flex flex-col items-center text-center mb-5 sm:mb-6">
           <div className="relative mb-2 group">
-            <div className="w-20 h-22 sm:w-24 sm:h-26 flex items-center justify-center filter drop-shadow-md">
-              <KarebaPinIcon className="w-20 h-22 sm:w-24 sm:h-26" />
+            <div className="w-20 h-24 sm:w-24 sm:h-28 flex items-center justify-center filter drop-shadow-md">
+              <KarebaPinIcon className="w-20 h-24 sm:w-24 sm:h-28" />
             </div>
           </div>
 
@@ -231,7 +237,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       </main>
 
       {/* Footer Bersih */}
-      <footer className="w-full max-w-md mx-auto px-6 py-4 text-center">
+      <footer className="w-full max-w-md mx-auto px-6 py-3 text-center shrink-0">
         <p className="text-[11px] text-neutral-500">
           © {new Date().getFullYear()} Kareba'Ta — Beritamu Suaramu
         </p>

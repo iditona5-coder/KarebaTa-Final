@@ -56,7 +56,13 @@ export const SetupUsernamePage: React.FC<SetupUsernamePageProps> = ({
   const isReady = usernameInput.trim().length >= 2;
 
   return (
-    <div className="min-h-screen w-full bg-white text-neutral-900 flex flex-col justify-between selection:bg-[#E5A000] selection:text-neutral-900">
+    <div
+      className="fixed inset-0 w-full h-full h-[100dvh] max-h-[100dvh] bg-white text-neutral-900 flex flex-col justify-between overflow-y-auto overscroll-none selection:bg-[#E5A000] selection:text-neutral-900"
+      style={{
+        paddingTop: "env(safe-area-inset-top, 0px)",
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
+      }}
+    >
       {/* Header Atas Full Width (Tanpa tombol ganti akun) */}
       <header className="w-full border-b border-neutral-100 bg-white sticky top-0 z-10">
         <div className="max-w-lg mx-auto px-5 py-3.5 flex items-center justify-between">

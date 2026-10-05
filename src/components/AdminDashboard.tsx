@@ -145,7 +145,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   };
 
   // State Data Firestore Real-time
-  const [appConfig, setAppConfig] = useState<AdminAppConfig>(DEFAULT_ADMIN_APP_CONFIG);
+  const [appConfig, setAppConfig] = useState<AdminAppConfig>(() => {
+    try {
+      const cached = localStorage.getItem("karebata_admin_app_config");
+      if (cached) return { ...DEFAULT_ADMIN_APP_CONFIG, ...JSON.parse(cached) };
+    } catch {}
+    return DEFAULT_ADMIN_APP_CONFIG;
+  });
   const [usersList, setUsersList] = useState<UserProfile[]>([]);
   const [reportsList, setReportsList] = useState<ReportItem[]>([]);
   const [bulletinsList, setBulletinsList] = useState<BulletinItem[]>([]);
@@ -213,7 +219,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     onConfirm: () => void;
   } | null>(null);
 
-  // Pantau Autentikasi Pengguna
+  // 1. Pantau Autentikasi Pengguna
   useEffect(() => {
     const unsub = subscribeToAuth((user) => {
       setCurrentUser(user);
@@ -222,10 +228,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     return () => unsub();
   }, []);
 
-  // Berlangganan Firestore Realtime Saat Passcode Terverifikasi
+  // 2. Berlangganan Pengaturan Umum & PIN Passcode Admin Real-Time (Aktif sejak awal buka halaman)
   useEffect(() => {
-    if (!isPasscodeVerified) return;
-
     const unsubConfig = listenToAdminAppConfig((cfg) => {
       setAppConfig(cfg);
       setSettingsAppName(cfg.appName);
@@ -235,6 +239,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       setSettingsPrivacy(cfg.privacyPolicyText);
       setSettingsTerms(cfg.termsOfServiceText);
     });
+    return () => unsubConfig();
+  }, []);
+
+  // 3. Berlangganan Data Sensitif Firestore Saat Passcode Terverifikasi
+  useEffect(() => {
+    if (!isPasscodeVerified) return;
 
     const unsubUsers = listenToAllUsers((users) => setUsersList(users));
     const unsubReports = listenToFirestoreReports((reps) => setReportsList(reps));
@@ -243,7 +253,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     const unsubLogs = listenToAdminAuditLogs((logs) => setAuditLogs(logs));
 
     return () => {
-      unsubConfig();
       unsubUsers();
       unsubReports();
       unsubBulletins();
@@ -263,10 +272,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     e.preventDefault();
     setLoginError(null);
     setIsLoggingIn(true);
+    const validPasscode = appConfig.adminPasscode || "123456";
+
+    // Kemudahan akses Admin Utama: Jika memasukkan email admin utama dan password/passcode 123456
+    if (
+      loginEmail.trim().toLowerCase() === PRIMARY_ADMIN_EMAIL.toLowerCase() &&
+      loginPassword.trim() === validPasscode.trim()
+    ) {
+      loginAsSimulatedUser(PRIMARY_ADMIN_EMAIL);
+      sessionStorage.setItem("karebata_admin_passcode_verified", "true");
+      setIsPasscodeVerified(true);
+      showToast("Selamat datang kembali, Admin Utama!");
+      logAdminActivity("LOGIN", `Admin login langsung dengan email & passcode`, PRIMARY_ADMIN_EMAIL);
+      setIsLoggingIn(false);
+      return;
+    }
+
     try {
       const res = await loginAdminWithEmailPassword(loginEmail, loginPassword);
       if (!res.success) {
-        setLoginError(res.error || "Gagal masuk ke akun Admin.");
+        setLoginError(res.error || "Gagal masuk ke akun Admin. Pastikan email dan password/passcode benar.");
       } else {
         showToast("Login akun Admin berhasil! Masukkan Admin Passcode.");
       }
@@ -2184,9 +2209,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       <button
                         type="button"
                         onClick={async () => {
-                          if (newAdminPasscode.trim().length >= 4) {
-                            await saveAdminAppConfig({ adminPasscode: newAdminPasscode.trim() });
-                            showToast("PIN Rahasia Admin berhasil diganti!");
+                          const cleanPin = newAdminPasscode.trim();
+                          if (cleanPin.length >= 4) {
+                            await saveAdminAppConfig({ adminPasscode: cleanPin });
+                            setAppConfig((prev) => ({ ...prev, adminPasscode: cleanPin }));
+                            showToast(`PIN Rahasia Admin berhasil diperbarui menjadi: ${cleanPin}`);
                             setNewAdminPasscode("");
                           } else {
                             showToast("PIN minimal 4 digit.");
