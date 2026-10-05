@@ -312,7 +312,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   // JIKA PASSCODE / PIN BELUM TERVERIFIKASI
   if (!isPasscodeVerified) {
     return (
-      <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-[#090D16] text-white flex flex-col items-center justify-center p-4 selection:bg-emerald-500 selection:text-white">
+      <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-neutral-100 text-neutral-900 flex flex-col items-center justify-center p-4 selection:bg-emerald-500 selection:text-white">
         {/* Toast Notifikasi */}
         {toastMessage && (
           <div className="fixed top-5 z-50 bg-emerald-600 text-white font-bold text-xs px-4 py-2.5 rounded-full shadow-2xl animate-fade-in flex items-center gap-2">
@@ -321,34 +321,34 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
         )}
 
-        <div className="w-full max-w-sm sm:max-w-md bg-[#0F172A] border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+        <div className="w-full max-w-sm sm:max-w-md bg-white border border-neutral-200 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
           {/* Logo & Judul Portal Admin */}
           <div className="text-center space-y-2">
-            <div className="w-16 h-16 bg-gradient-to-tr from-emerald-600 to-teal-400 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-emerald-950 border border-emerald-400/30">
+            <div className="w-16 h-16 bg-gradient-to-tr from-emerald-600 to-teal-400 rounded-2xl mx-auto flex items-center justify-center shadow-lg shadow-emerald-900/10 border border-emerald-400/30">
               <ShieldCheck className="w-9 h-9 text-white" />
             </div>
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white">
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight text-neutral-900">
               Dasbor Pengelola
             </h1>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-neutral-500">
               Masukkan PIN Rahasia Anda untuk membuka Dasbor Admin
             </p>
           </div>
 
           <form onSubmit={handlePasscodeSubmit} className="space-y-4">
             {passcodeError && (
-              <div className="p-3 bg-rose-950/70 border border-rose-800 rounded-xl text-xs text-rose-300 flex items-start gap-2">
-                <AlertTriangle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
+              <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600 mt-0.5" />
                 <span>{passcodeError}</span>
               </div>
             )}
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-bold text-slate-300">
+                <label className="text-xs font-bold text-neutral-700">
                   PIN Rahasia Admin
                 </label>
-                <span className="text-[10px] text-slate-400 font-mono">Kode Keamanan</span>
+                <span className="text-[10px] text-neutral-400 font-mono">Kode Keamanan</span>
               </div>
               <div className="relative">
                 <input
@@ -359,13 +359,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   value={passcodeInput}
                   onChange={(e) => setPasscodeInput(e.target.value)}
                   placeholder="Ketik PIN Rahasia..."
-                  className="w-full bg-[#080D1A] border border-slate-700 rounded-xl py-3 pl-10 pr-12 text-sm text-white placeholder:text-slate-500 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none tracking-widest font-mono"
+                  className="w-full bg-neutral-50 border border-neutral-300 rounded-xl py-3 pl-10 pr-12 text-sm text-neutral-900 placeholder:text-neutral-400 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 outline-none tracking-widest font-mono"
                 />
-                <Key className="w-4 h-4 text-amber-400 absolute left-3 top-3.5" />
+                <Key className="w-4 h-4 text-amber-600 absolute left-3 top-3.5" />
                 <button
                   type="button"
                   onClick={() => setShowPasscode(!showPasscode)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white cursor-pointer p-1"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-700 cursor-pointer p-1"
                   aria-label={showPasscode ? "Sembunyikan PIN" : "Lihat PIN"}
                 >
                   {showPasscode ? (
@@ -379,7 +379,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
             <button
               type="submit"
-              className="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-amber-950 transition active:scale-98 cursor-pointer flex items-center justify-center gap-2"
+              className="w-full py-3 bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-amber-900/10 transition active:scale-98 cursor-pointer flex items-center justify-center gap-2"
             >
               <Key className="w-4 h-4" />
               <span>Buka Dasbor Admin</span>
@@ -387,11 +387,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </form>
 
           {/* Tombol Balik ke Aplikasi Pengguna */}
-          <div className="pt-2 border-t border-slate-800 text-center">
+          <div className="pt-2 border-t border-neutral-200 text-center">
             <button
               type="button"
               onClick={onBackToFeed}
-              className="text-xs text-slate-400 hover:text-emerald-400 font-semibold transition flex items-center justify-center gap-1 mx-auto cursor-pointer"
+              className="text-xs text-neutral-500 hover:text-emerald-700 font-semibold transition flex items-center justify-center gap-1 mx-auto cursor-pointer"
             >
               <span>← Kembali ke Aplikasi Kabar Warga</span>
               <ExternalLink className="w-3 h-3" />
@@ -406,7 +406,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   // TAMPILAN DASHBOARD ADMIN LENGKAP (10 MENU MATERIAL 3)
   // =========================================================================
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-[#080D1A] text-slate-100 flex flex-col lg:flex-row antialiased selection:bg-emerald-500 selection:text-white">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-neutral-50 text-neutral-900 flex flex-col lg:flex-row antialiased selection:bg-emerald-500 selection:text-white">
       {/* Toast Notifikasi */}
       {toastMessage && (
         <div className="fixed top-5 right-5 z-50 bg-emerald-600 text-white font-bold text-xs px-4 py-2.5 rounded-full shadow-2xl animate-fade-in flex items-center gap-2 border border-emerald-400">
@@ -419,22 +419,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {/* SIDEBAR NAVIGATION DRAWER (MATERIAL 3) */}
       {/* ================================================================= */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-[#0F172A] border-r border-slate-800 flex flex-col justify-between transition-transform duration-300 lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-neutral-200 flex flex-col justify-between transition-transform duration-300 lg:translate-x-0 ${
           isMobileDrawerOpen ? "translate-x-0" : "-translate-x-0 max-lg:-translate-x-full"
         }`}
       >
         {/* Brand Header */}
-        <div className="p-5 border-b border-slate-800">
+        <div className="p-5 border-b border-neutral-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white font-black text-sm shadow-md shadow-emerald-950">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center text-white font-black text-sm shadow-md shadow-emerald-900/10">
                 K
               </div>
               <div>
-                <h2 className="font-extrabold text-sm text-white tracking-tight">
+                <h2 className="font-extrabold text-sm text-neutral-900 tracking-tight">
                   Kareba'Ta Admin
                 </h2>
-                <span className="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider">
+                <span className="text-[10px] text-emerald-600 font-semibold uppercase tracking-wider">
                   Panel Pengelola
                 </span>
               </div>
@@ -443,7 +443,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <button
               type="button"
               onClick={() => setIsMobileDrawerOpen(false)}
-              className="lg:hidden p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800"
+              className="lg:hidden p-1.5 text-neutral-400 hover:text-neutral-700 rounded-lg hover:bg-neutral-100"
             >
               <X className="w-5 h-5" />
             </button>
@@ -461,8 +461,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             }}
             className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
               activeMenu === "dashboard"
-                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-950"
-                : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
+                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-900/10"
+                : "text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100"
             }`}
           >
             <LayoutDashboard className="w-4 h-4" />
@@ -478,15 +478,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             }}
             className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
               activeMenu === "users"
-                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-950"
-                : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
+                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-900/10"
+                : "text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100"
             }`}
           >
             <div className="flex items-center gap-3">
               <Users className="w-4 h-4" />
               <span>2. Pengguna</span>
             </div>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-semibold">
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-700 font-semibold border border-neutral-200">
               {totalUsersCount}
             </span>
           </button>
@@ -500,15 +500,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             }}
             className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
               activeMenu === "posts"
-                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-950"
-                : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
+                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-900/10"
+                : "text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100"
             }`}
           >
             <div className="flex items-center gap-3">
               <FileText className="w-4 h-4" />
               <span>3. Postingan</span>
             </div>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-semibold">
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-700 font-semibold border border-neutral-200">
               {feedPosts.length}
             </span>
           </button>
@@ -522,8 +522,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             }}
             className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
               activeMenu === "reports"
-                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-950"
-                : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
+                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-900/10"
+                : "text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100"
             }`}
           >
             <div className="flex items-center gap-3">
@@ -546,15 +546,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             }}
             className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
               activeMenu === "bulletins"
-                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-950"
-                : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
+                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-900/10"
+                : "text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100"
             }`}
           >
             <div className="flex items-center gap-3">
               <Megaphone className="w-4 h-4" />
               <span>5. Teks Berjalan</span>
             </div>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-semibold">
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-700 font-semibold border border-neutral-200">
               {bulletinsList.length}
             </span>
           </button>
@@ -568,15 +568,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             }}
             className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
               activeMenu === "ads"
-                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-950"
-                : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
+                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-900/10"
+                : "text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100"
             }`}
           >
             <div className="flex items-center gap-3">
-              <Megaphone className="w-4 h-4 text-amber-400" />
+              <Megaphone className="w-4 h-4 text-amber-600" />
               <span>6. Iklan Sponsor</span>
             </div>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold">
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 font-bold">
               {adSettings.ads.filter((a) => a.isActive).length} Aktif
             </span>
           </button>
@@ -590,8 +590,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             }}
             className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
               activeMenu === "analytics"
-                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-950"
-                : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
+                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-900/10"
+                : "text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100"
             }`}
           >
             <BarChart3 className="w-4 h-4" />
@@ -607,8 +607,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             }}
             className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
               activeMenu === "settings"
-                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-950"
-                : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
+                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-900/10"
+                : "text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100"
             }`}
           >
             <Settings className="w-4 h-4" />
@@ -624,15 +624,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             }}
             className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
               activeMenu === "logs"
-                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-950"
-                : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/60"
+                ? "bg-emerald-600 text-white shadow-lg shadow-emerald-900/10"
+                : "text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100"
             }`}
           >
             <div className="flex items-center gap-3">
               <History className="w-4 h-4" />
               <span>9. Log Aktivitas</span>
             </div>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-semibold">
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-neutral-100 text-neutral-700 font-semibold border border-neutral-200">
               {auditLogs.length}
             </span>
           </button>
@@ -641,7 +641,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <button
             type="button"
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-rose-400 hover:bg-rose-950/40 hover:text-rose-300 transition cursor-pointer"
+            className="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
             <span className="flex-1 text-left">10. Keluar</span>
@@ -649,16 +649,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         </nav>
 
         {/* Profil Admin Footer */}
-        <div className="p-4 border-t border-slate-800 bg-[#0A0F1D]">
+        <div className="p-4 border-t border-neutral-200 bg-neutral-50">
           <div className="flex items-center justify-between">
             <div className="min-w-0">
-              <p className="text-xs font-bold text-white truncate">{currentUser?.email || PRIMARY_ADMIN_EMAIL}</p>
-              <p className="text-[10px] text-emerald-400 font-semibold">Admin Utama</p>
+              <p className="text-xs font-bold text-neutral-900 truncate">{currentUser?.email || PRIMARY_ADMIN_EMAIL}</p>
+              <p className="text-[10px] text-emerald-600 font-semibold">Admin Utama</p>
             </div>
             <button
               type="button"
               onClick={handleLogout}
-              className="p-1.5 text-slate-400 hover:text-rose-400 transition"
+              className="p-1.5 text-neutral-400 hover:text-rose-600 transition"
               aria-label="Logout"
             >
               <LogOut className="w-4 h-4" />
@@ -680,17 +680,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {/* ================================================================= */}
       <div className="flex-1 flex flex-col min-w-0 lg:pl-64">
         {/* Top Header Bar */}
-        <header className="sticky top-0 z-20 bg-[#0F172A]/90 backdrop-blur-md border-b border-slate-800 px-4 sm:px-6 py-3 flex items-center justify-between">
+        <header className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-neutral-200 px-4 sm:px-6 py-3 shadow-2xs flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
               type="button"
               onClick={() => setIsMobileDrawerOpen(true)}
-              className="lg:hidden p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white"
+              className="lg:hidden p-2 rounded-xl bg-neutral-100 text-neutral-700 hover:text-neutral-900 border border-neutral-200"
             >
               <Menu className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-base sm:text-lg font-black text-white capitalize">
+              <h1 className="text-base sm:text-lg font-black text-neutral-900 capitalize">
                 {activeMenu === "dashboard" && "1. Dashboard & Ikhtisar Aplikasi"}
                 {activeMenu === "users" && "2. Manajemen Pengguna & Akun Warga"}
                 {activeMenu === "posts" && "3. Moderasi Postingan & Kabar Warga"}
@@ -701,7 +701,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 {activeMenu === "settings" && "8. Pengaturan Aplikasi & Kunci Admin"}
                 {activeMenu === "logs" && "9. Log Aktivitas Audit Pengelola"}
               </h1>
-              <p className="text-[11px] text-slate-400 hidden sm:block">
+              <p className="text-[11px] text-neutral-500 hidden sm:block">
                 Kareba'Ta Cloud Database &bull; Realtime Sync Aktif
               </p>
             </div>
@@ -711,9 +711,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <button
               type="button"
               onClick={onBackToFeed}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl transition cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 border border-neutral-200 text-xs font-bold rounded-xl transition cursor-pointer"
             >
-              <ExternalLink className="w-3.5 h-3.5 text-emerald-400" />
+              <ExternalLink className="w-3.5 h-3.5 text-emerald-600" />
               <span className="hidden sm:inline">Lihat Aplikasi Warga</span>
             </button>
           </div>
@@ -729,73 +729,73 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               {/* Kartu Statistik Utama Material 3 */}
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
                 {/* 1. Pengguna */}
-                <div className="bg-[#0F172A] border border-slate-800 p-4 rounded-2xl shadow-sm">
-                  <div className="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center mb-2">
+                <div className="bg-white border border-neutral-200 p-4 rounded-2xl shadow-sm">
+                  <div className="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-600 flex items-center justify-center mb-2">
                     <Users className="w-4 h-4" />
                   </div>
-                  <p className="text-[11px] text-slate-400 font-semibold">Total Pengguna</p>
-                  <h3 className="text-xl font-black text-white mt-0.5">{totalUsersCount}</h3>
+                  <p className="text-[11px] text-neutral-500 font-semibold">Total Pengguna</p>
+                  <h3 className="text-xl font-black text-neutral-900 mt-0.5">{totalUsersCount}</h3>
                 </div>
 
                 {/* 2. Postingan */}
-                <div className="bg-[#0F172A] border border-slate-800 p-4 rounded-2xl shadow-sm">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-2">
+                <div className="bg-white border border-neutral-200 p-4 rounded-2xl shadow-sm">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-600 flex items-center justify-center mb-2">
                     <FileText className="w-4 h-4" />
                   </div>
-                  <p className="text-[11px] text-slate-400 font-semibold">Total Postingan</p>
-                  <h3 className="text-xl font-black text-white mt-0.5">{feedPosts.length}</h3>
+                  <p className="text-[11px] text-neutral-500 font-semibold">Total Postingan</p>
+                  <h3 className="text-xl font-black text-neutral-900 mt-0.5">{feedPosts.length}</h3>
                 </div>
 
                 {/* 3. Views */}
-                <div className="bg-[#0F172A] border border-slate-800 p-4 rounded-2xl shadow-sm">
-                  <div className="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center mb-2">
+                <div className="bg-white border border-neutral-200 p-4 rounded-2xl shadow-sm">
+                  <div className="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-600 flex items-center justify-center mb-2">
                     <Eye className="w-4 h-4" />
                   </div>
-                  <p className="text-[11px] text-slate-400 font-semibold">Total Dilihat</p>
-                  <h3 className="text-xl font-black text-white mt-0.5">{totalViewsCount}</h3>
+                  <p className="text-[11px] text-neutral-500 font-semibold">Total Dilihat</p>
+                  <h3 className="text-xl font-black text-neutral-900 mt-0.5">{totalViewsCount}</h3>
                 </div>
 
                 {/* 4. Suka */}
-                <div className="bg-[#0F172A] border border-slate-800 p-4 rounded-2xl shadow-sm">
-                  <div className="w-8 h-8 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center mb-2">
+                <div className="bg-white border border-neutral-200 p-4 rounded-2xl shadow-sm">
+                  <div className="w-8 h-8 rounded-xl bg-rose-500/20 text-rose-600 flex items-center justify-center mb-2">
                     <Heart className="w-4 h-4" />
                   </div>
-                  <p className="text-[11px] text-slate-400 font-semibold">Total Suka</p>
-                  <h3 className="text-xl font-black text-white mt-0.5">{totalLikesCount}</h3>
+                  <p className="text-[11px] text-neutral-500 font-semibold">Total Suka</p>
+                  <h3 className="text-xl font-black text-neutral-900 mt-0.5">{totalLikesCount}</h3>
                 </div>
 
                 {/* 5. Laporan */}
-                <div className="bg-[#0F172A] border border-slate-800 p-4 rounded-2xl shadow-sm">
-                  <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center mb-2">
+                <div className="bg-white border border-neutral-200 p-4 rounded-2xl shadow-sm">
+                  <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-600 flex items-center justify-center mb-2">
                     <AlertTriangle className="w-4 h-4" />
                   </div>
-                  <p className="text-[11px] text-slate-400 font-semibold">Laporan Masuk</p>
-                  <h3 className="text-xl font-black text-white mt-0.5">{pendingReportsCount}</h3>
+                  <p className="text-[11px] text-neutral-500 font-semibold">Laporan Masuk</p>
+                  <h3 className="text-xl font-black text-neutral-900 mt-0.5">{pendingReportsCount}</h3>
                 </div>
 
                 {/* 6. Iklan Aktif */}
-                <div className="bg-[#0F172A] border border-slate-800 p-4 rounded-2xl shadow-sm">
-                  <div className="w-8 h-8 rounded-xl bg-yellow-500/20 text-yellow-400 flex items-center justify-center mb-2">
+                <div className="bg-white border border-neutral-200 p-4 rounded-2xl shadow-sm">
+                  <div className="w-8 h-8 rounded-xl bg-yellow-500/20 text-yellow-600 flex items-center justify-center mb-2">
                     <Megaphone className="w-4 h-4" />
                   </div>
-                  <p className="text-[11px] text-slate-400 font-semibold">Iklan Tayang</p>
-                  <h3 className="text-xl font-black text-white mt-0.5">
+                  <p className="text-[11px] text-neutral-500 font-semibold">Iklan Tayang</p>
+                  <h3 className="text-xl font-black text-neutral-900 mt-0.5">
                     {adSettings.ads.filter((a) => a.isActive).length}
                   </h3>
                 </div>
               </div>
 
               {/* Seksi Postingan Terbaru Warga */}
-              <div className="bg-[#0F172A] border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+              <div className="bg-white border border-neutral-200 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-extrabold text-sm text-white flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-emerald-400" />
+                  <h3 className="font-extrabold text-sm text-neutral-900 flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-emerald-600" />
                     <span>Postingan Terkini di Beranda Warga</span>
                   </h3>
                   <button
                     type="button"
                     onClick={() => setActiveMenu("posts")}
-                    className="text-xs font-bold text-emerald-400 hover:underline"
+                    className="text-xs font-bold text-emerald-600 hover:underline"
                   >
                     Kelola Semua Postingan &rarr;
                   </button>
@@ -805,20 +805,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   {feedPosts.slice(0, 6).map((post) => (
                     <div
                       key={post.id}
-                      className="bg-[#080D1A] border border-slate-800/80 rounded-2xl p-3.5 space-y-3 flex flex-col justify-between"
+                      className="bg-neutral-50 border border-neutral-200/80 rounded-2xl p-3.5 space-y-3 flex flex-col justify-between"
                     >
                       <div className="flex items-center gap-2.5">
                         <div className="w-8 h-8 rounded-full bg-emerald-700 text-white font-extrabold text-xs flex items-center justify-center shrink-0">
                           {(post.user || post.name || "W")[0].toUpperCase()}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs font-bold text-white truncate">
+                          <p className="text-xs font-bold text-neutral-900 truncate">
                             @{post.user || post.name || "warga"}
                           </p>
-                          <p className="text-[10px] text-slate-400 truncate">{post.location || post.time}</p>
+                          <p className="text-[10px] text-neutral-500 truncate">{post.location || post.time}</p>
                         </div>
                         {post.isHidden && (
-                          <span className="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded-full">
+                          <span className="text-[10px] bg-amber-500/20 text-amber-700 font-bold px-2 py-0.5 rounded-full">
                             Disembunyikan
                           </span>
                         )}
@@ -834,11 +834,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         </div>
                       )}
 
-                      <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed">
+                      <p className="text-xs text-neutral-600 line-clamp-2 leading-relaxed">
                         {post.text || "Tanpa teks"}
                       </p>
 
-                      <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400">
+                      <div className="pt-2 border-t border-neutral-200/80 flex items-center justify-between text-[11px] text-neutral-500">
                         <span>👁️ {post.views || 0} tayang</span>
                         <span>❤️ {post.like || 0} suka</span>
                       </div>
@@ -854,7 +854,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           {/* =============================================================== */}
           {activeMenu === "users" && (
             <div className="space-y-6 animate-fade-in">
-              <div className="bg-[#0F172A] border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+              <div className="bg-white border border-neutral-200 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                   {/* Pencarian Pengguna */}
                   <div className="relative flex-1">
@@ -863,7 +863,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       value={searchUserQuery}
                       onChange={(e) => setSearchUserQuery(e.target.value)}
                       placeholder="Cari nama atau username pengguna..."
-                      className="w-full bg-[#080D1A] border border-slate-700 rounded-xl py-2 pl-9 pr-3 text-xs text-white focus:outline-none focus:border-emerald-500"
+                      className="w-full bg-neutral-50 border border-neutral-200 rounded-xl py-2 pl-9 pr-3 text-xs text-neutral-900 focus:outline-none focus:border-emerald-500"
                     />
                     <Search className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
                   </div>
@@ -878,7 +878,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         className={`px-3 py-1.5 rounded-xl text-xs font-bold transition capitalize cursor-pointer whitespace-nowrap ${
                           userStatusFilter === st
                             ? "bg-emerald-600 text-white"
-                            : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                            : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
                         }`}
                       >
                         {st === "all" ? "Semua Status" : st}
@@ -906,15 +906,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     .map((user) => (
                       <div
                         key={user.userName}
-                        className="bg-[#080D1A] border border-slate-800 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+                        className="bg-neutral-50 border border-neutral-200 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
                       >
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-black text-sm flex items-center justify-center shrink-0 shadow-xs">
                             {user.initial}
                           </div>
                           <div>
-                            <h4 className="text-xs font-bold text-white">@{user.userName}</h4>
-                            <p className="text-[11px] text-slate-400">{user.email}</p>
+                            <h4 className="text-xs font-bold text-neutral-900">@{user.userName}</h4>
+                            <p className="text-[11px] text-neutral-500">{user.email}</p>
                           </div>
                         </div>
 
@@ -932,7 +932,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               });
                               setEditUserNameInput(user.userName);
                             }}
-                            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg transition cursor-pointer flex items-center gap-1.5"
+                            className="px-3 py-1.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 text-xs font-semibold rounded-lg transition cursor-pointer flex items-center gap-1.5"
                           >
                             <Edit3 className="w-3.5 h-3.5 text-sky-400" />
                             <span>Edit Nama</span>
@@ -950,7 +950,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 initial: user.initial,
                               });
                             }}
-                            className="px-3 py-1.5 bg-amber-950/60 border border-amber-800/80 hover:bg-amber-900 text-amber-300 text-xs font-bold rounded-lg transition cursor-pointer flex items-center gap-1.5"
+                            className="px-3 py-1.5 bg-amber-50 border border-amber-200/80 hover:bg-amber-900 text-amber-700 text-xs font-bold rounded-lg transition cursor-pointer flex items-center gap-1.5"
                           >
                             <UserX className="w-3.5 h-3.5" />
                             <span>Suspend</span>
@@ -970,7 +970,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 },
                               });
                             }}
-                            className="px-3 py-1.5 bg-rose-950/60 border border-rose-800/80 hover:bg-rose-900 text-rose-300 text-xs font-bold rounded-lg transition cursor-pointer"
+                            className="px-3 py-1.5 bg-rose-50/60 border border-rose-200/80 hover:bg-rose-900 text-rose-700 text-xs font-bold rounded-lg transition cursor-pointer"
                           >
                             Blokir
                           </button>
@@ -983,20 +983,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               {/* MODAL EDIT NAMA PENGGUNA */}
               {selectedUserForEdit && (
                 <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
-                  <div className="bg-[#0F172A] border border-slate-700 rounded-3xl w-full max-w-sm p-5 space-y-4">
-                    <h3 className="text-sm font-black text-white">Edit Nama Pengguna</h3>
+                  <div className="bg-white border border-neutral-200 rounded-3xl w-full max-w-sm p-5 space-y-4">
+                    <h3 className="text-sm font-black text-neutral-900">Edit Nama Pengguna</h3>
                     <input
                       type="text"
                       value={editUserNameInput}
                       onChange={(e) => setEditUserNameInput(e.target.value)}
                       placeholder="Masukkan nama pengguna baru..."
-                      className="w-full bg-[#080D1A] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                      className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 text-xs text-neutral-900 focus:outline-none focus:border-emerald-500"
                     />
                     <div className="flex justify-end gap-2">
                       <button
                         type="button"
                         onClick={() => setSelectedUserForEdit(null)}
-                        className="px-3 py-1.5 text-xs text-slate-400 hover:text-white"
+                        className="px-3 py-1.5 text-xs text-neutral-500 hover:text-neutral-900"
                       >
                         Batal
                       </button>
@@ -1026,7 +1026,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           {/* =============================================================== */}
           {activeMenu === "posts" && (
             <div className="space-y-6 animate-fade-in">
-              <div className="bg-[#0F172A] border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+              <div className="bg-white border border-neutral-200 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                   <div className="relative flex-1">
                     <input
@@ -1034,7 +1034,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       value={searchPostQuery}
                       onChange={(e) => setSearchPostQuery(e.target.value)}
                       placeholder="Cari postingan, caption, lokasi, atau penulis..."
-                      className="w-full bg-[#080D1A] border border-slate-700 rounded-xl py-2 pl-9 pr-3 text-xs text-white focus:outline-none focus:border-emerald-500"
+                      className="w-full bg-neutral-50 border border-neutral-200 rounded-xl py-2 pl-9 pr-3 text-xs text-neutral-900 focus:outline-none focus:border-emerald-500"
                     />
                     <Search className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
                   </div>
@@ -1048,7 +1048,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         className={`px-3 py-1.5 rounded-xl text-xs font-bold transition capitalize cursor-pointer whitespace-nowrap ${
                           postMediaFilter === med
                             ? "bg-emerald-600 text-white"
-                            : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+                            : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
                         }`}
                       >
                         {med === "all" ? "Semua Media" : med}
@@ -1071,11 +1071,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     .map((post) => (
                       <div
                         key={post.id}
-                        className="bg-[#080D1A] border border-slate-800 rounded-2xl p-4 space-y-3 flex flex-col justify-between"
+                        className="bg-neutral-50 border border-neutral-200 rounded-2xl p-4 space-y-3 flex flex-col justify-between"
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2 min-w-0">
-                            <span className="font-bold text-xs text-white truncate">
+                            <span className="font-bold text-xs text-neutral-900 truncate">
                               @{post.user || post.name || "warga"}
                             </span>
                             <span className="text-[10px] text-slate-500">&bull; {post.time}</span>
@@ -1083,8 +1083,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           <span
                             className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
                               post.isHidden
-                                ? "bg-amber-500/20 text-amber-300"
-                                : "bg-emerald-500/20 text-emerald-300"
+                                ? "bg-amber-500/20 text-amber-700"
+                                : "bg-emerald-500/20 text-emerald-700"
                             }`}
                           >
                             {post.isHidden ? "Tersembunyi" : "Aktif di Beranda"}
@@ -1106,12 +1106,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           </div>
                         )}
 
-                        <p className="text-xs text-slate-200 line-clamp-3 leading-relaxed">
+                        <p className="text-xs text-neutral-800 line-clamp-3 leading-relaxed">
                           {post.text || "Tanpa teks"}
                         </p>
 
-                        <div className="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2 text-[11px] text-slate-400">
+                        <div className="pt-2 border-t border-neutral-200/80 flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 text-[11px] text-neutral-500">
                             <span>👁️ {post.views || 0}</span>
                             <span>❤️ {post.like || 0}</span>
                           </div>
@@ -1128,7 +1128,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                     : "Postingan disembunyikan dari beranda."
                                 );
                               }}
-                              className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg transition cursor-pointer"
+                              className="px-2.5 py-1 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 text-xs font-semibold rounded-lg transition cursor-pointer"
                             >
                               {post.isHidden ? "Pulihkan" : "Sembunyikan"}
                             </button>
@@ -1141,7 +1141,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                 setEditPostCaption(post.text || "");
                                 setEditPostLocation(post.location || "");
                               }}
-                              className="p-1.5 bg-slate-800 hover:bg-slate-700 text-sky-400 rounded-lg transition"
+                              className="p-1.5 bg-neutral-100 hover:bg-neutral-200 text-sky-400 rounded-lg transition"
                               aria-label="Edit Postingan"
                             >
                               <Edit3 className="w-3.5 h-3.5" />
@@ -1163,7 +1163,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                                   },
                                 });
                               }}
-                              className="p-1.5 bg-slate-800 hover:bg-rose-950 text-rose-400 rounded-lg transition"
+                              className="p-1.5 bg-neutral-100 hover:bg-rose-50 text-rose-600 rounded-lg transition"
                               aria-label="Hapus Postingan"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -1178,31 +1178,31 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               {/* MODAL EDIT POSTINGAN */}
               {selectedPostForEdit && (
                 <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
-                  <div className="bg-[#0F172A] border border-slate-700 rounded-3xl w-full max-w-md p-5 space-y-4">
-                    <h3 className="text-sm font-black text-white">Edit Postingan Warga</h3>
+                  <div className="bg-white border border-neutral-200 rounded-3xl w-full max-w-md p-5 space-y-4">
+                    <h3 className="text-sm font-black text-neutral-900">Edit Postingan Warga</h3>
                     <div>
-                      <label className="text-xs text-slate-400 block mb-1">Isi Teks / Berita</label>
+                      <label className="text-xs text-neutral-500 block mb-1">Isi Teks / Berita</label>
                       <textarea
                         rows={3}
                         value={editPostCaption}
                         onChange={(e) => setEditPostCaption(e.target.value)}
-                        className="w-full bg-[#080D1A] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                        className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 text-xs text-neutral-900 focus:outline-none focus:border-emerald-500"
                       />
                     </div>
                     <div>
-                      <label className="text-xs text-slate-400 block mb-1">Lokasi</label>
+                      <label className="text-xs text-neutral-500 block mb-1">Lokasi</label>
                       <input
                         type="text"
                         value={editPostLocation}
                         onChange={(e) => setEditPostLocation(e.target.value)}
-                        className="w-full bg-[#080D1A] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                        className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 text-xs text-neutral-900 focus:outline-none focus:border-emerald-500"
                       />
                     </div>
                     <div className="flex justify-end gap-2 pt-2">
                       <button
                         type="button"
                         onClick={() => setSelectedPostForEdit(null)}
-                        className="px-3 py-1.5 text-xs text-slate-400 hover:text-white"
+                        className="px-3 py-1.5 text-xs text-neutral-500 hover:text-neutral-900"
                       >
                         Batal
                       </button>
@@ -1232,10 +1232,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           {/* =============================================================== */}
           {activeMenu === "reports" && (
             <div className="space-y-6 animate-fade-in">
-              <div className="bg-[#0F172A] border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+              <div className="bg-white border border-neutral-200 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-extrabold text-sm text-white flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 text-amber-400" />
+                  <h3 className="font-extrabold text-sm text-neutral-900 flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-amber-600" />
                     <span>Laporan Pelanggaran Komunitas Warga</span>
                   </h3>
                   <div className="flex items-center gap-1.5">
@@ -1247,7 +1247,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         className={`px-3 py-1 rounded-xl text-xs font-bold transition capitalize cursor-pointer ${
                           reportFilter === rf
                             ? "bg-emerald-600 text-white"
-                            : "bg-slate-800 text-slate-300"
+                            : "bg-neutral-100 text-neutral-600"
                         }`}
                       >
                         {rf === "all" ? "Semua" : rf === "pending" ? "Menunggu" : "Selesai"}
@@ -1257,10 +1257,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
 
                 {reportsList.length === 0 ? (
-                  <div className="text-center py-12 border border-dashed border-slate-800 rounded-2xl">
+                  <div className="text-center py-12 border border-dashed border-neutral-200 rounded-2xl">
                     <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto mb-2" />
-                    <p className="text-sm font-bold text-white">Tidak Ada Laporan Pelanggaran</p>
-                    <p className="text-xs text-slate-400 mt-1">
+                    <p className="text-sm font-bold text-neutral-900">Tidak Ada Laporan Pelanggaran</p>
+                    <p className="text-xs text-neutral-500 mt-1">
                       Komunitas Kareba'Ta saat ini kondusif dan tertib.
                     </p>
                   </div>
@@ -1271,31 +1271,31 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       .map((report) => (
                         <div
                           key={report.id}
-                          className="bg-[#080D1A] border border-slate-800 rounded-2xl p-4 space-y-3"
+                          className="bg-neutral-50 border border-neutral-200 rounded-2xl p-4 space-y-3"
                         >
                           <div className="flex items-center justify-between">
-                            <span className="text-xs font-black text-rose-400 uppercase tracking-wide">
+                            <span className="text-xs font-black text-rose-600 uppercase tracking-wide">
                               ⚠️ {report.reason}
                             </span>
                             <span className="text-[10px] text-slate-500">{report.timeString}</span>
                           </div>
 
-                          <p className="text-xs text-slate-300">
+                          <p className="text-xs text-neutral-600">
                             Target Pengguna: <b>@{report.targetUser}</b>
                           </p>
 
                           {report.postText && (
-                            <blockquote className="p-3 bg-black/40 border-l-2 border-amber-400 text-xs text-slate-300 italic rounded-r-xl">
+                            <blockquote className="p-3 bg-black/40 border-l-2 border-amber-400 text-xs text-neutral-600 italic rounded-r-xl">
                               "{report.postText}"
                             </blockquote>
                           )}
 
-                          <div className="pt-2 border-t border-slate-800 flex items-center justify-between">
+                          <div className="pt-2 border-t border-neutral-200 flex items-center justify-between">
                             <span
                               className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
                                 report.status === "resolved"
-                                  ? "bg-emerald-500/20 text-emerald-300"
-                                  : "bg-amber-500/20 text-amber-300"
+                                  ? "bg-emerald-500/20 text-emerald-700"
+                                  : "bg-amber-500/20 text-amber-700"
                               }`}
                             >
                               Status: {report.status === "resolved" ? "Selesai Ditinjau" : "Menunggu Aksi"}
@@ -1348,10 +1348,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           {/* =============================================================== */}
           {activeMenu === "bulletins" && (
             <div className="space-y-6 animate-fade-in">
-              <div className="bg-[#0F172A] border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+              <div className="bg-white border border-neutral-200 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-extrabold text-sm text-white flex items-center gap-2">
-                    <Megaphone className="w-4 h-4 text-emerald-400" />
+                  <h3 className="font-extrabold text-sm text-neutral-900 flex items-center gap-2">
+                    <Megaphone className="w-4 h-4 text-emerald-600" />
                     <span>Kelola Teks Pengumuman Berjalan</span>
                   </h3>
                 </div>
@@ -1370,10 +1370,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     setNewBulletinText("");
                     showToast("Teks pengumuman berjalan berhasil diterbitkan!");
                   }}
-                  className="bg-[#080D1A] border border-slate-800 p-4 rounded-2xl space-y-3"
+                  className="bg-neutral-50 border border-neutral-200 p-4 rounded-2xl space-y-3"
                 >
                   <div>
-                    <label className="text-xs font-bold text-slate-300 block mb-1">
+                    <label className="text-xs font-bold text-neutral-600 block mb-1">
                       Isi Teks Pengumuman *
                     </label>
                     <input
@@ -1382,17 +1382,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       value={newBulletinText}
                       onChange={(e) => setNewBulletinText(e.target.value)}
                       placeholder="Contoh: Info Pemadaman Bergilir PLN..."
-                      className="w-full bg-[#0F172A] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500"
+                      className="w-full bg-white border border-neutral-200 rounded-xl px-3 py-2 text-xs text-neutral-900 focus:outline-none focus:border-emerald-500"
                     />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-bold text-slate-300 block mb-1">Kategori</label>
+                      <label className="text-xs font-bold text-neutral-600 block mb-1">Kategori</label>
                       <select
                         value={newBulletinCategory}
                         onChange={(e) => setNewBulletinCategory(e.target.value)}
-                        className="w-full bg-[#0F172A] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
+                        className="w-full bg-white border border-neutral-200 rounded-xl px-3 py-2 text-xs text-neutral-900"
                       >
                         <option value="INFO RESMI">INFO RESMI</option>
                         <option value="PERINGATAN">PERINGATAN</option>
@@ -1402,12 +1402,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       </select>
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-slate-300 block mb-1">Lokasi</label>
+                      <label className="text-xs font-bold text-neutral-600 block mb-1">Lokasi</label>
                       <input
                         type="text"
                         value={newBulletinLocation}
                         onChange={(e) => setNewBulletinLocation(e.target.value)}
-                        className="w-full bg-[#0F172A] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
+                        className="w-full bg-white border border-neutral-200 rounded-xl px-3 py-2 text-xs text-neutral-900"
                       />
                     </div>
                   </div>
@@ -1425,13 +1425,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   {bulletinsList.map((item) => (
                     <div
                       key={item.id}
-                      className="bg-[#080D1A] border border-slate-800 p-3.5 rounded-2xl flex items-center justify-between gap-3"
+                      className="bg-neutral-50 border border-neutral-200 p-3.5 rounded-2xl flex items-center justify-between gap-3"
                     >
                       <div className="min-w-0 flex-1">
-                        <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
+                        <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-700">
                           {item.category}
                         </span>
-                        <p className="text-xs font-semibold text-white mt-1 leading-snug">
+                        <p className="text-xs font-semibold text-neutral-900 mt-1 leading-snug">
                           {item.text}
                         </p>
                       </div>
@@ -1441,7 +1441,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           await deleteBulletinFromFirestore(item.id);
                           showToast("Pengumuman berhasil dihapus.");
                         }}
-                        className="p-1.5 text-slate-500 hover:text-rose-400 transition"
+                        className="p-1.5 text-slate-500 hover:text-rose-600 transition"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -1457,14 +1457,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           {/* =============================================================== */}
           {activeMenu === "ads" && (
             <div className="space-y-6 animate-fade-in">
-              <div className="bg-[#0F172A] border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-5">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+              <div className="bg-white border border-neutral-200 rounded-3xl p-5 sm:p-6 shadow-xl space-y-5">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-neutral-200 pb-4">
                   <div>
-                    <h3 className="font-extrabold text-sm text-white flex items-center gap-2">
-                      <Megaphone className="w-4 h-4 text-amber-400" />
+                    <h3 className="font-extrabold text-sm text-neutral-900 flex items-center gap-2">
+                      <Megaphone className="w-4 h-4 text-amber-600" />
                       <span>Manajemen Slot Iklan Bersponsor</span>
                     </h3>
-                    <p className="text-xs text-slate-400 mt-0.5">
+                    <p className="text-xs text-neutral-500 mt-0.5">
                       Iklan muncul di sela beranda kabar warga dengan tombol langsung ke WhatsApp toko.
                     </p>
                   </div>
@@ -1487,10 +1487,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                 {/* Saklar Global & Frekuensi */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="bg-[#080D1A] border border-slate-800 p-4 rounded-2xl flex items-center justify-between">
+                  <div className="bg-neutral-50 border border-neutral-200 p-4 rounded-2xl flex items-center justify-between">
                     <div>
-                      <p className="text-xs font-bold text-white">Status Iklan di Beranda</p>
-                      <p className="text-[11px] text-slate-400">
+                      <p className="text-xs font-bold text-neutral-900">Status Iklan di Beranda</p>
+                      <p className="text-[11px] text-neutral-500">
                         {adSettings.isEnabled ? "Aktif tampil di HP warga" : "Nonaktif (disembunyikan)"}
                       </p>
                     </div>
@@ -1507,17 +1507,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       className="cursor-pointer"
                     >
                       {adSettings.isEnabled ? (
-                        <ToggleRight className="w-10 h-10 text-emerald-400" />
+                        <ToggleRight className="w-10 h-10 text-emerald-600" />
                       ) : (
                         <ToggleLeft className="w-10 h-10 text-slate-600" />
                       )}
                     </button>
                   </div>
 
-                  <div className="bg-[#080D1A] border border-slate-800 p-4 rounded-2xl flex items-center justify-between">
+                  <div className="bg-neutral-50 border border-neutral-200 p-4 rounded-2xl flex items-center justify-between">
                     <div>
-                      <p className="text-xs font-bold text-white">Frekuensi Tayang</p>
-                      <p className="text-[11px] text-slate-400">Tampil setiap berapa kabar?</p>
+                      <p className="text-xs font-bold text-neutral-900">Frekuensi Tayang</p>
+                      <p className="text-[11px] text-neutral-500">Tampil setiap berapa kabar?</p>
                     </div>
                     <div className="flex items-center gap-1.5">
                       {[3, 4, 5, 7].map((num) => (
@@ -1531,7 +1531,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           className={`px-2.5 py-1 rounded-lg text-xs font-bold transition ${
                             adSettings.frequency === num
                               ? "bg-amber-500 text-slate-950"
-                              : "bg-slate-800 text-slate-300"
+                              : "bg-neutral-100 text-neutral-600"
                           }`}
                         >
                           Tiap {num}
@@ -1546,7 +1546,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   {adSettings.ads.map((ad) => (
                     <div
                       key={ad.id}
-                      className="bg-[#080D1A] border border-slate-800 rounded-2xl overflow-hidden flex flex-col justify-between"
+                      className="bg-neutral-50 border border-neutral-200 rounded-2xl overflow-hidden flex flex-col justify-between"
                     >
                       <div className="h-40 bg-black/50 overflow-hidden relative">
                         {ad.imageUrl && (
@@ -1558,14 +1558,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       </div>
 
                       <div className="p-4 space-y-1 flex-1">
-                        <h4 className="text-xs font-bold text-white">{ad.title}</h4>
-                        <p className="text-xs text-amber-400 font-semibold">{ad.advertiserName}</p>
-                        <p className="text-xs text-slate-300 line-clamp-2 leading-relaxed">
+                        <h4 className="text-xs font-bold text-neutral-900">{ad.title}</h4>
+                        <p className="text-xs text-amber-600 font-semibold">{ad.advertiserName}</p>
+                        <p className="text-xs text-neutral-600 line-clamp-2 leading-relaxed">
                           {ad.description}
                         </p>
                       </div>
 
-                      <div className="p-3 bg-slate-900/60 border-t border-slate-800 flex items-center justify-between">
+                      <div className="p-3 bg-white/60 border-t border-neutral-200 flex items-center justify-between">
                         <button
                           type="button"
                           onClick={async () => {
@@ -1574,8 +1574,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           }}
                           className={`px-3 py-1 rounded-lg text-xs font-bold ${
                             ad.isActive
-                              ? "bg-amber-950 text-amber-300 border border-amber-800"
-                              : "bg-emerald-950 text-emerald-300 border border-emerald-800"
+                              ? "bg-amber-50 text-amber-700 border border-amber-200"
+                              : "bg-emerald-50 text-emerald-700 border border-emerald-200"
                           }`}
                         >
                           {ad.isActive ? "Jeda Iklan" : "Aktifkan"}
@@ -1595,7 +1595,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                               },
                             });
                           }}
-                          className="p-1.5 text-slate-500 hover:text-rose-400"
+                          className="p-1.5 text-slate-500 hover:text-rose-600"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -1608,8 +1608,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               {/* MODAL TAMBAH / EDIT IKLAN */}
               {isAdModalOpen && (
                 <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-                  <div className="bg-[#0F172A] border border-slate-700 rounded-3xl w-full max-w-lg p-5 sm:p-6 space-y-4 my-8">
-                    <h3 className="text-sm font-black text-white">
+                  <div className="bg-white border border-neutral-200 rounded-3xl w-full max-w-lg p-5 sm:p-6 space-y-4 my-8">
+                    <h3 className="text-sm font-black text-neutral-900">
                       {editingAd ? "Edit Iklan Sponsor" : "Pasang Iklan Sponsor Baru"}
                     </h3>
 
@@ -1638,80 +1638,80 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       className="space-y-3"
                     >
                       <div>
-                        <label className="text-xs text-slate-300 block mb-1">Judul Promosi *</label>
+                        <label className="text-xs text-neutral-600 block mb-1">Judul Promosi *</label>
                         <input
                           type="text"
                           required
                           value={adFormTitle}
                           onChange={(e) => setAdFormTitle(e.target.value)}
                           placeholder="Diskon 20% Kopi Arabika Sulteng"
-                          className="w-full bg-[#080D1A] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
+                          className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 text-xs text-neutral-900"
                         />
                       </div>
 
                       <div>
-                        <label className="text-xs text-slate-300 block mb-1">Nama Toko / Usaha *</label>
+                        <label className="text-xs text-neutral-600 block mb-1">Nama Toko / Usaha *</label>
                         <input
                           type="text"
                           required
                           value={adFormAdvertiser}
                           onChange={(e) => setAdFormAdvertiser(e.target.value)}
                           placeholder="Warkop Sudirman & Roastery"
-                          className="w-full bg-[#080D1A] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
+                          className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 text-xs text-neutral-900"
                         />
                       </div>
 
                       <div>
-                        <label className="text-xs text-slate-300 block mb-1">Deskripsi Promosi *</label>
+                        <label className="text-xs text-neutral-600 block mb-1">Deskripsi Promosi *</label>
                         <textarea
                           rows={2}
                           required
                           value={adFormDesc}
                           onChange={(e) => setAdFormDesc(e.target.value)}
-                          className="w-full bg-[#080D1A] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
+                          className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 text-xs text-neutral-900"
                         />
                       </div>
 
                       <div>
-                        <label className="text-xs text-slate-300 block mb-1">URL Poster / Banner</label>
+                        <label className="text-xs text-neutral-600 block mb-1">URL Poster / Banner</label>
                         <input
                           type="url"
                           value={adFormImg}
                           onChange={(e) => setAdFormImg(e.target.value)}
                           placeholder="https://..."
-                          className="w-full bg-[#080D1A] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
+                          className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 text-xs text-neutral-900"
                         />
                       </div>
 
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="text-xs text-slate-300 block mb-1">Nomor WhatsApp *</label>
+                          <label className="text-xs text-neutral-600 block mb-1">Nomor WhatsApp *</label>
                           <input
                             type="text"
                             required
                             value={adFormTarget}
                             onChange={(e) => setAdFormTarget(e.target.value)}
                             placeholder="081234567890"
-                            className="w-full bg-[#080D1A] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
+                            className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 text-xs text-neutral-900"
                           />
                         </div>
                         <div>
-                          <label className="text-xs text-slate-300 block mb-1">Teks Tombol</label>
+                          <label className="text-xs text-neutral-600 block mb-1">Teks Tombol</label>
                           <input
                             type="text"
                             value={adFormBtnText}
                             onChange={(e) => setAdFormBtnText(e.target.value)}
                             placeholder="Pesan via WhatsApp"
-                            className="w-full bg-[#080D1A] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
+                            className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 text-xs text-neutral-900"
                           />
                         </div>
                       </div>
 
-                      <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+                      <div className="flex justify-end gap-2 pt-3 border-t border-neutral-200">
                         <button
                           type="button"
                           onClick={() => setIsAdModalOpen(false)}
-                          className="px-4 py-2 text-xs text-slate-400"
+                          className="px-4 py-2 text-xs text-neutral-500"
                         >
                           Batal
                         </button>
@@ -1736,33 +1736,33 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <div className="space-y-6 animate-fade-in">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Pertumbuhan Warga & Aktivitas */}
-                <div className="bg-[#0F172A] border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
-                  <h3 className="font-extrabold text-sm text-white flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-emerald-400" />
+                <div className="bg-white border border-neutral-200 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+                  <h3 className="font-extrabold text-sm text-neutral-900 flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-emerald-600" />
                     <span>Statistik Pertumbuhan Komunitas</span>
                   </h3>
                   <div className="space-y-3">
                     <div>
                       <div className="flex justify-between text-xs mb-1">
-                        <span className="text-slate-400">Total Akun Terdaftar</span>
-                        <span className="font-bold text-white">{totalUsersCount}</span>
+                        <span className="text-neutral-500">Total Akun Terdaftar</span>
+                        <span className="font-bold text-neutral-900">{totalUsersCount}</span>
                       </div>
-                      <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                      <div className="w-full h-2 bg-neutral-100 rounded-full overflow-hidden">
                         <div className="w-[85%] h-full bg-emerald-500 rounded-full" />
                       </div>
                     </div>
 
                     <div>
                       <div className="flex justify-between text-xs mb-1">
-                        <span className="text-slate-400">Rasio Interaksi (Likes / Views)</span>
-                        <span className="font-bold text-white">
+                        <span className="text-neutral-500">Rasio Interaksi (Likes / Views)</span>
+                        <span className="font-bold text-neutral-900">
                           {totalViewsCount > 0
                             ? Math.round((totalLikesCount / totalViewsCount) * 100)
                             : 0}
                           %
                         </span>
                       </div>
-                      <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                      <div className="w-full h-2 bg-neutral-100 rounded-full overflow-hidden">
                         <div className="w-[45%] h-full bg-indigo-500 rounded-full" />
                       </div>
                     </div>
@@ -1770,32 +1770,32 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 </div>
 
                 {/* Perangkat Pengguna */}
-                <div className="bg-[#0F172A] border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
-                  <h3 className="font-extrabold text-sm text-white flex items-center gap-2">
+                <div className="bg-white border border-neutral-200 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+                  <h3 className="font-extrabold text-sm text-neutral-900 flex items-center gap-2">
                     <Smartphone className="w-4 h-4 text-sky-400" />
                     <span>Distribusi Perangkat Pengguna</span>
                   </h3>
                   <div className="space-y-4 pt-1">
-                    <div className="flex items-center justify-between p-3 bg-[#080D1A] rounded-2xl border border-slate-800">
+                    <div className="flex items-center justify-between p-3 bg-neutral-50 rounded-2xl border border-neutral-200">
                       <div className="flex items-center gap-3">
-                        <Smartphone className="w-5 h-5 text-emerald-400" />
+                        <Smartphone className="w-5 h-5 text-emerald-600" />
                         <div>
-                          <p className="text-xs font-bold text-white">Smartphone (Android & iOS)</p>
-                          <p className="text-[10px] text-slate-400">PWA & Browser Mobile</p>
+                          <p className="text-xs font-bold text-neutral-900">Smartphone (Android & iOS)</p>
+                          <p className="text-[10px] text-neutral-500">PWA & Browser Mobile</p>
                         </div>
                       </div>
-                      <span className="text-sm font-black text-emerald-400">92%</span>
+                      <span className="text-sm font-black text-emerald-600">92%</span>
                     </div>
 
-                    <div className="flex items-center justify-between p-3 bg-[#080D1A] rounded-2xl border border-slate-800">
+                    <div className="flex items-center justify-between p-3 bg-neutral-50 rounded-2xl border border-neutral-200">
                       <div className="flex items-center gap-3">
-                        <Laptop className="w-5 h-5 text-indigo-400" />
+                        <Laptop className="w-5 h-5 text-indigo-600" />
                         <div>
-                          <p className="text-xs font-bold text-white">Laptop & Komputer Desktop</p>
-                          <p className="text-[10px] text-slate-400">Web Browser</p>
+                          <p className="text-xs font-bold text-neutral-900">Laptop & Komputer Desktop</p>
+                          <p className="text-[10px] text-neutral-500">Web Browser</p>
                         </div>
                       </div>
-                      <span className="text-sm font-black text-indigo-400">8%</span>
+                      <span className="text-sm font-black text-indigo-600">8%</span>
                     </div>
                   </div>
                 </div>
@@ -1810,28 +1810,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             <div className="space-y-6 animate-fade-in">
               {/* KARTU KHUSUS: PENGATURAN NOMOR WHATSAPP & JAM RESPON ADMIN */}
               <div className="bg-gradient-to-r from-[#0F172A] via-[#111C35] to-[#0F172A] border-2 border-emerald-500/40 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-neutral-200 pb-4">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-[#25D366] border border-emerald-500/40 flex items-center justify-center shrink-0 shadow-lg">
                       <Phone className="w-6 h-6" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-black text-base text-white">
+                        <h3 className="font-black text-base text-neutral-900">
                           Pengaturan Kontak WhatsApp & Jam Respon Admin
                         </h3>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-600 border border-emerald-500/40">
                           Aktif Real-time
                         </span>
                       </div>
-                      <p className="text-xs text-slate-400 mt-0.5">
+                      <p className="text-xs text-neutral-500 mt-0.5">
                         Pengaturan ini langsung tersinkronisasi ke tombol <b>Layanan Pasang Iklan Sponsor</b> di aplikasi warga.
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 bg-[#080D1A] px-4 py-2 rounded-2xl border border-slate-700 shrink-0">
-                    <span className="text-[11px] font-bold text-slate-400">Nomor Saat Ini:</span>
+                  <div className="flex items-center gap-2 bg-neutral-50 px-4 py-2 rounded-2xl border border-neutral-200 shrink-0">
+                    <span className="text-[11px] font-bold text-neutral-500">Nomor Saat Ini:</span>
                     <span className="font-mono text-sm sm:text-base font-black text-[#25D366] tracking-wider select-all">
                       {appConfig.adminWhatsapp || "085351037179"}
                     </span>
@@ -1841,8 +1841,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
                   {/* Input Nomor WhatsApp */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-300 flex items-center gap-2">
-                      <Phone className="w-3.5 h-3.5 text-emerald-400" />
+                    <label className="text-xs font-bold text-neutral-600 flex items-center gap-2">
+                      <Phone className="w-3.5 h-3.5 text-emerald-600" />
                       <span>Nomor WhatsApp Admin (Tujuan Chat Iklan & Layanan)</span>
                     </label>
                     <div className="relative">
@@ -1851,15 +1851,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         value={settingsWhatsapp}
                         onChange={(e) => setSettingsWhatsapp(e.target.value)}
                         placeholder="Contoh: 081234567890 atau 6281234567890..."
-                        className="w-full bg-[#080D1A] border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-3 text-xs sm:text-sm text-white font-mono placeholder:text-slate-600 focus:outline-none transition"
+                        className="w-full bg-neutral-50 border border-neutral-200 focus:border-emerald-500 rounded-xl px-4 py-3 text-xs sm:text-sm text-neutral-900 font-mono placeholder:text-neutral-400 focus:outline-none transition"
                       />
                     </div>
                   </div>
 
                   {/* Input Jam Respon Admin */}
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-300 flex items-center gap-2">
-                      <Clock className="w-3.5 h-3.5 text-amber-400" />
+                    <label className="text-xs font-bold text-neutral-600 flex items-center gap-2">
+                      <Clock className="w-3.5 h-3.5 text-amber-600" />
                       <span>Jam Respon Admin (Ditampilkan di Halaman Iklan)</span>
                     </label>
                     <div className="relative">
@@ -1868,13 +1868,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         value={settingsWorkingHours}
                         onChange={(e) => setSettingsWorkingHours(e.target.value)}
                         placeholder="Contoh: Setiap Hari: 08.00 - 21.00 WITA..."
-                        className="w-full bg-[#080D1A] border border-slate-700 focus:border-emerald-500 rounded-xl px-4 py-3 text-xs sm:text-sm text-white placeholder:text-slate-600 focus:outline-none transition"
+                        className="w-full bg-neutral-50 border border-neutral-200 focus:border-emerald-500 rounded-xl px-4 py-3 text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none transition"
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-end gap-3 pt-2 border-t border-slate-800/80">
+                <div className="flex flex-wrap items-center justify-end gap-3 pt-2 border-t border-neutral-200/80">
                   <button
                     type="button"
                     onClick={() => {
@@ -1882,7 +1882,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       const intl = digits.startsWith("0") ? "62" + digits.slice(1) : digits;
                       window.open(`https://wa.me/${intl}`, "_blank");
                     }}
-                    className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl border border-slate-700 transition cursor-pointer flex items-center justify-center gap-1.5"
+                    className="px-4 py-2.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 text-xs font-bold rounded-xl border border-neutral-200 transition cursor-pointer flex items-center justify-center gap-1.5"
                     aria-label="Tes Tautan WhatsApp"
                   >
                     <ExternalLink className="w-4 h-4" />
@@ -1904,7 +1904,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       });
                       showToast(`Pengaturan WhatsApp (${cleanWa}) & Jam Respon berhasil diperbarui!`);
                     }}
-                    className="px-6 py-2.5 bg-[#25D366] hover:bg-[#20ba59] active:scale-95 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-emerald-950 transition cursor-pointer flex items-center justify-center gap-2"
+                    className="px-6 py-2.5 bg-[#25D366] hover:bg-[#20ba59] active:scale-95 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-emerald-900/10 transition cursor-pointer flex items-center justify-center gap-2"
                   >
                     <Save className="w-4 h-4" />
                     <span>Simpan Pengaturan WhatsApp & Jam Respon</span>
@@ -1914,9 +1914,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* 1. Pengaturan Identitas Aplikasi & Kontak */}
-                <div className="bg-[#0F172A] border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
-                  <h3 className="font-extrabold text-sm text-white flex items-center gap-2">
-                    <Settings className="w-4 h-4 text-emerald-400" />
+                <div className="bg-white border border-neutral-200 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+                  <h3 className="font-extrabold text-sm text-neutral-900 flex items-center gap-2">
+                    <Settings className="w-4 h-4 text-emerald-600" />
                     <span>Identitas Aplikasi & Kontak Pengelola</span>
                   </h3>
 
@@ -1935,52 +1935,52 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     className="space-y-3"
                   >
                     <div>
-                      <label className="text-xs text-slate-300 block mb-1">Nama Aplikasi</label>
+                      <label className="text-xs text-neutral-600 block mb-1">Nama Aplikasi</label>
                       <input
                         type="text"
                         value={settingsAppName}
                         onChange={(e) => setSettingsAppName(e.target.value)}
-                        className="w-full bg-[#080D1A] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
+                        className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 text-xs text-neutral-900"
                       />
                     </div>
 
                     <div>
-                      <label className="text-xs text-slate-300 block mb-1">Nomor WhatsApp Admin</label>
+                      <label className="text-xs text-neutral-600 block mb-1">Nomor WhatsApp Admin</label>
                       <input
                         type="text"
                         value={settingsWhatsapp}
                         onChange={(e) => setSettingsWhatsapp(e.target.value)}
-                        className="w-full bg-[#080D1A] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
+                        className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 text-xs text-neutral-900"
                       />
                     </div>
 
                     <div>
-                      <label className="text-xs text-slate-300 block mb-1">Email Resmi Admin</label>
+                      <label className="text-xs text-neutral-600 block mb-1">Email Resmi Admin</label>
                       <input
                         type="email"
                         value={settingsEmail}
                         onChange={(e) => setSettingsEmail(e.target.value)}
-                        className="w-full bg-[#080D1A] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
+                        className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 text-xs text-neutral-900"
                       />
                     </div>
 
                     <div>
-                      <label className="text-xs text-slate-300 block mb-1">Kebijakan Privasi</label>
+                      <label className="text-xs text-neutral-600 block mb-1">Kebijakan Privasi</label>
                       <textarea
                         rows={3}
                         value={settingsPrivacy}
                         onChange={(e) => setSettingsPrivacy(e.target.value)}
-                        className="w-full bg-[#080D1A] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
+                        className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 text-xs text-neutral-900"
                       />
                     </div>
 
                     <div>
-                      <label className="text-xs text-slate-300 block mb-1">Syarat & Ketentuan</label>
+                      <label className="text-xs text-neutral-600 block mb-1">Syarat & Ketentuan</label>
                       <textarea
                         rows={3}
                         value={settingsTerms}
                         onChange={(e) => setSettingsTerms(e.target.value)}
-                        className="w-full bg-[#080D1A] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
+                        className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 text-xs text-neutral-900"
                       />
                     </div>
 
@@ -1996,16 +1996,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 {/* 2. Keamanan Kunci Admin: Ganti Password & Passcode */}
                 <div className="space-y-6">
                   {/* Ganti Admin Passcode */}
-                  <div className="bg-[#0F172A] border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
-                    <h3 className="font-extrabold text-sm text-white flex items-center gap-2">
-                      <Key className="w-4 h-4 text-amber-400" />
+                  <div className="bg-white border border-neutral-200 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+                    <h3 className="font-extrabold text-sm text-neutral-900 flex items-center gap-2">
+                      <Key className="w-4 h-4 text-amber-600" />
                       <span>Ganti PIN Rahasia / Passcode Admin</span>
                     </h3>
-                    <p className="text-xs text-slate-400">
-                      PIN Rahasia saat ini: <b className="text-amber-400 font-mono tracking-wider">{appConfig.adminPasscode || "123456"}</b>
+                    <p className="text-xs text-neutral-500">
+                      PIN Rahasia saat ini: <b className="text-amber-600 font-mono tracking-wider">{appConfig.adminPasscode || "123456"}</b>
                     </p>
                     <p className="text-[11px] text-slate-500 leading-relaxed">
-                      PIN ini adalah autentikasi keamanan lapis ke-2 saat Anda membuka portal <code className="text-emerald-400">/admin</code>. Anda dapat menggantinya dengan 4 - 10 angka atau karakter baru kapan saja.
+                      PIN ini adalah autentikasi keamanan lapis ke-2 saat Anda membuka portal <code className="text-emerald-600">/admin</code>. Anda dapat menggantinya dengan 4 - 10 angka atau karakter baru kapan saja.
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-2">
@@ -2015,7 +2015,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         value={newAdminPasscode}
                         onChange={(e) => setNewAdminPasscode(e.target.value)}
                         placeholder="Ketik PIN baru (min. 4 digit, contoh: 987654)..."
-                        className="flex-1 bg-[#080D1A] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-amber-400"
+                        className="flex-1 bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 text-xs text-white placeholder:text-neutral-400 focus:outline-none focus:border-amber-400"
                       />
                       <button
                         type="button"
@@ -2038,32 +2038,32 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </div>
 
                   {/* Ganti Password Akun Admin */}
-                  <div className="bg-[#0F172A] border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
-                    <h3 className="font-extrabold text-sm text-white flex items-center gap-2">
-                      <Lock className="w-4 h-4 text-emerald-400" />
+                  <div className="bg-white border border-neutral-200 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+                    <h3 className="font-extrabold text-sm text-neutral-900 flex items-center gap-2">
+                      <Lock className="w-4 h-4 text-emerald-600" />
                       <span>Ganti Password Login Admin</span>
                     </h3>
 
                     <div className="space-y-3">
                       <div>
-                        <label className="text-xs text-slate-400 block mb-1">Password Baru</label>
+                        <label className="text-xs text-neutral-500 block mb-1">Password Baru</label>
                         <input
                           type="password"
                           value={newAdminPassword}
                           onChange={(e) => setNewAdminPassword(e.target.value)}
                           placeholder="Minimal 6 karakter..."
-                          className="w-full bg-[#080D1A] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
+                          className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 text-xs text-neutral-900"
                         />
                       </div>
 
                       <div>
-                        <label className="text-xs text-slate-400 block mb-1">Konfirmasi Password Baru</label>
+                        <label className="text-xs text-neutral-500 block mb-1">Konfirmasi Password Baru</label>
                         <input
                           type="password"
                           value={confirmAdminPassword}
                           onChange={(e) => setConfirmAdminPassword(e.target.value)}
                           placeholder="Ulangi password baru..."
-                          className="w-full bg-[#080D1A] border border-slate-700 rounded-xl px-3 py-2 text-xs text-white"
+                          className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 text-xs text-neutral-900"
                         />
                       </div>
 
@@ -2106,20 +2106,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           {/* =============================================================== */}
           {activeMenu === "logs" && (
             <div className="space-y-6 animate-fade-in">
-              <div className="bg-[#0F172A] border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+              <div className="bg-white border border-neutral-200 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-extrabold text-sm text-white flex items-center gap-2">
-                    <History className="w-4 h-4 text-emerald-400" />
+                  <h3 className="font-extrabold text-sm text-neutral-900 flex items-center gap-2">
+                    <History className="w-4 h-4 text-emerald-600" />
                     <span>Audit Trail Log Aktivitas Admin</span>
                   </h3>
-                  <span className="text-xs text-slate-400">{auditLogs.length} catatan aktivitas</span>
+                  <span className="text-xs text-neutral-500">{auditLogs.length} catatan aktivitas</span>
                 </div>
 
                 <div className="space-y-2.5">
                   {auditLogs.map((log) => (
                     <div
                       key={log.id}
-                      className="bg-[#080D1A] border border-slate-800 p-3.5 rounded-2xl flex items-start justify-between gap-3"
+                      className="bg-neutral-50 border border-neutral-200 p-3.5 rounded-2xl flex items-start justify-between gap-3"
                     >
                       <div className="flex items-start gap-3">
                         <span
@@ -2127,14 +2127,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             log.type === "LOGIN" || log.type === "LOGOUT"
                               ? "bg-blue-500/20 text-blue-300"
                               : log.type === "DELETE_DATA" || log.type === "BAN_USER"
-                              ? "bg-rose-500/20 text-rose-300"
-                              : "bg-emerald-500/20 text-emerald-300"
+                              ? "bg-rose-500/20 text-rose-700"
+                              : "bg-emerald-500/20 text-emerald-700"
                           }`}
                         >
                           {log.type}
                         </span>
                         <div>
-                          <p className="text-xs text-white font-medium">{log.description}</p>
+                          <p className="text-xs text-neutral-900 font-medium">{log.description}</p>
                           <p className="text-[10px] text-slate-500">{log.adminEmail}</p>
                         </div>
                       </div>
@@ -2153,16 +2153,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {/* MODAL KONFIRMASI KUSTOM ADMIN (Bebas 100% dari confirm bawaan browser) */}
       {confirmDialog && confirmDialog.isOpen && (
         <div className="fixed inset-0 z-[99999] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in select-none">
-          <div className="bg-[#0B132B] border border-slate-700/80 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
+          <div className="bg-white border border-neutral-200/80 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
             <div className="space-y-1.5">
-              <h3 className="text-base font-bold text-white">{confirmDialog.title}</h3>
-              <p className="text-xs text-slate-300 leading-relaxed">{confirmDialog.message}</p>
+              <h3 className="text-base font-bold text-neutral-900">{confirmDialog.title}</h3>
+              <p className="text-xs text-neutral-600 leading-relaxed">{confirmDialog.message}</p>
             </div>
-            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-800">
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-neutral-200">
               <button
                 type="button"
                 onClick={() => setConfirmDialog(null)}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 transition cursor-pointer"
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-neutral-600 hover:text-neutral-900 bg-neutral-100 hover:bg-neutral-200 transition cursor-pointer"
               >
                 Batal
               </button>
