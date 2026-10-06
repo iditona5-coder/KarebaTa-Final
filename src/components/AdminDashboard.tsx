@@ -1475,7 +1475,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       setAdFormTitle("");
                       setAdFormAdvertiser("");
                       setAdFormDesc("");
-                      setAdFormImg("https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=800&q=80");
+                      setAdFormImg("");
                       setAdFormTarget(appConfig.adminWhatsapp || "085351037179");
                       setIsAdModalOpen(true);
                     }}

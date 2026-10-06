@@ -50,7 +50,7 @@ export function KarebaTaLogo({
             className="text-[12px] sm:text-[13px] font-bold tracking-[0.05em] text-[#E5A000] leading-tight mt-1"
             style={{ fontFamily: "'Poppins', system-ui, sans-serif" }}
           >
-            beritamu suaramu
+            beritamu, suaramu
           </span>
         )}
       </div>

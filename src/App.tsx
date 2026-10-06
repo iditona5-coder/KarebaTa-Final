@@ -115,7 +115,9 @@ export default function KarebaFeedFinal() {
     }
   });
 
+  const likedPostIdsRef = useRef(likedPostIds);
   useEffect(() => {
+    likedPostIdsRef.current = likedPostIds;
     try {
       localStorage.setItem("karebata_liked_posts", JSON.stringify(likedPostIds));
     } catch (e) {
@@ -199,19 +201,12 @@ export default function KarebaFeedFinal() {
 
   const [viewMode, setViewMode] = useState<"login" | "set_name" | "feed" | "admin">(() => {
     if (isDedicatedAdminRoute()) return "admin";
-    // Keamanan: Saat aplikasi baru dibuka (setelah keluar aplikasi / browser ditutup),
-    // selalu hadapkan pengguna ke halaman login (pilihan Masuk Google & Kabar Warga)
-    const hasActiveSession = typeof window !== "undefined" && sessionStorage.getItem("karebata_active_session") === "true";
-    if (hasActiveSession) {
-      if (typeof window !== "undefined" && window.location.hash === "#feed") return "feed";
-      const hasGuestSession = typeof window !== "undefined" && sessionStorage.getItem("kareba_guest_mode") === "true";
-      if (hasGuestSession) return "feed";
-    }
-    // Jika belum ada sesi aktif, bersihkan hash agar tetap di halaman login
-    if (typeof window !== "undefined" && window.location.hash === "#feed") {
-      try {
-        window.history.replaceState(null, "", window.location.pathname);
-      } catch {}
+    if (typeof window !== "undefined") {
+      const isLogged = localStorage.getItem("karebata_is_logged_in") === "true";
+      const isGuest =
+        localStorage.getItem("kareba_guest_mode") === "true" ||
+        sessionStorage.getItem("kareba_guest_mode") === "true";
+      if (isLogged || isGuest || window.location.hash === "#feed") return "feed";
     }
     return "login";
   });
@@ -221,14 +216,6 @@ export default function KarebaFeedFinal() {
     const handleRouteChange = () => {
       if (isDedicatedAdminRoute()) {
         setViewMode("admin");
-        return;
-      }
-      const hasActiveSession = typeof window !== "undefined" && sessionStorage.getItem("karebata_active_session") === "true";
-      if (!hasActiveSession && window.location.hash === "#feed") {
-        try {
-          window.history.replaceState(null, "", window.location.pathname);
-        } catch {}
-        setViewMode("login");
         return;
       }
       if (window.location.hash === "#feed") {
@@ -258,32 +245,34 @@ export default function KarebaFeedFinal() {
   // Berlangganan status autentikasi Google Firebase
   useEffect(() => {
     const unsubAuth = subscribeToAuth((user) => {
-      // Keamanan: Cek apakah sesi aplikasi saat ini sudah aktif di browser
-      const hasActiveSession = typeof window !== "undefined" && sessionStorage.getItem("karebata_active_session") === "true";
-
-      if (!hasActiveSession) {
-        // Jika aplikasi baru dibuka setelah browser/tab ditutup, wajibkan login ulang demi keamanan
-        if (user) {
-          logoutUser().catch(() => {});
-        }
-        setCurrentUser(null);
-        setViewMode((prev) => (prev === "admin" ? "admin" : "login"));
-        return;
-      }
-
-      setCurrentUser(user);
       if (user) {
+        setCurrentUser(user);
+        try {
+          localStorage.setItem("karebata_is_logged_in", "true");
+        } catch {}
+        setViewMode((prev) => (prev === "login" ? "feed" : prev));
+
         checkRegisteredUser(user.email, user.uid).then((res) => {
           if (res.isRegistered && res.username) {
             setUserName(res.username);
           } else {
-            setUserName("warga_kareba");
+            setUserName(user.displayName ? user.displayName.slice(0, 13) : "warga_kareba");
           }
         }).catch(() => {
-          setUserName("warga_kareba");
+          setUserName(user.displayName ? user.displayName.slice(0, 13) : "warga_kareba");
         });
       } else {
-        setUserName("warga_kareba");
+        setCurrentUser(null);
+        const isGuest = typeof window !== "undefined" && (
+          localStorage.getItem("kareba_guest_mode") === "true" ||
+          sessionStorage.getItem("kareba_guest_mode") === "true"
+        );
+        if (!isGuest) {
+          try {
+            localStorage.removeItem("karebata_is_logged_in");
+          } catch {}
+          setViewMode((prev) => (prev === "admin" ? "admin" : "login"));
+        }
       }
     });
     return () => unsubAuth();
@@ -351,6 +340,7 @@ export default function KarebaFeedFinal() {
   // - Pengguna baru (email/akun belum pernah terdaftar): WAJIB masuk halaman ngetik nama terlebih dahulu, baru muncul aplikasi!
   const handleLoginSuccess = async (loggedInUser?: User | null) => {
     if (typeof window !== "undefined") {
+      localStorage.setItem("karebata_is_logged_in", "true");
       sessionStorage.setItem("karebata_active_session", "true");
     }
     setIsLoginModalOpen(false);
@@ -442,6 +432,8 @@ export default function KarebaFeedFinal() {
   const handleContinueAsGuest = () => {
     sessionStorage.setItem("kareba_guest_mode", "true");
     sessionStorage.setItem("karebata_active_session", "true");
+    localStorage.setItem("kareba_guest_mode", "true");
+    localStorage.setItem("karebata_is_logged_in", "true");
     setLoginRedirectMessage(null);
     setViewMode("feed");
     showToast("Selamat datang, Warga Kareba!");
@@ -455,6 +447,8 @@ export default function KarebaFeedFinal() {
       setUserName("warga_kareba");
       sessionStorage.removeItem("kareba_guest_mode");
       sessionStorage.removeItem("karebata_active_session");
+      localStorage.removeItem("kareba_guest_mode");
+      localStorage.removeItem("karebata_is_logged_in");
       localStorage.removeItem("karebata_username");
       setViewMode("login");
       showToast("Berhasil keluar dari akun. Sesi diamankan.");
@@ -491,15 +485,18 @@ export default function KarebaFeedFinal() {
   // - Pada postingan sendiri: HANYA kita yang melihat icon X (Hapus), dan TIDAK melihat icon Laporkan.
   // - Pada postingan orang lain: kita melihat icon Laporkan, dan TIDAK melihat icon X (Hapus).
   const isMyPost = (item: { isMyPost?: boolean; user?: string; email?: string }) => {
+    const myEmail = (currentUser?.email || userEmail || "").toLowerCase();
+    const myName = (userName || "").toLowerCase();
+    if (myEmail && item.email && item.email.toLowerCase() === myEmail) {
+      return true;
+    }
+    if (myName && item.user && item.user.toLowerCase() === myName) {
+      return true;
+    }
     if (typeof item.isMyPost === "boolean") {
       return item.isMyPost;
     }
-    return (
-      item.user === userName ||
-      item.user === "kamu" ||
-      item.email === "iditona5@gmail.com" ||
-      item.email === userEmail
-    );
+    return false;
   };
 
   // In-app interactive states to avoid window.prompt / alert in iframe
@@ -600,165 +597,74 @@ export default function KarebaFeedFinal() {
     }
   });
 
-  // State untuk "Postingan Kamu"
-  const [posts, setPosts] = useState<PostItem[]>([
-    {
-      id: "post-video-1",
-      title: "Pesona Pesisir Bahari",
-      loc: "Kawasan Pesisir Barat",
-      img: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-      thumbnail: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80",
-      mediaType: "video",
-      caption: "Rekaman video senja dan ombak tenang di pesisir bahari. Suasana adem dan damai.",
-      createdAt: "30 menit lalu",
-      name: "Sahabat Kareba",
-      email: "iditona5@gmail.com",
-      user: "kamu",
-      init: "K",
-      isMyPost: true,
-    },
-    {
-      id: "post-1",
-      title: "Pantai Indah",
-      loc: "Pesisir Barat",
-      img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80",
-      caption: "Pemandangan pesisir pantai menjelang petang. Angin sepoi-sepoi dan ombak tenang.",
-      createdAt: "2 jam lalu",
-      name: "Sahabat Kareba",
-      email: "iditona5@gmail.com",
-      user: "kamu",
-      init: "K",
-      isMyPost: true,
-    },
-    {
-      id: "post-2",
-      title: "Jembatan Utama Kota",
-      loc: "Pusat Kota",
-      img: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=600&auto=format&fit=crop&q=80",
-      caption: "Ikon kebanggaan kota yang menghubungkan wilayah pesisir, bersinar indah di malam hari.",
-      createdAt: "5 jam lalu",
-      name: "Sahabat Kareba",
-      email: "iditona5@gmail.com",
-      user: "kamu",
-      init: "K",
-      isMyPost: true,
-    },
-    {
-      id: "post-3",
-      title: "Kuliner Tradisional",
-      loc: "Sentra Kuliner",
-      img: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&auto=format&fit=crop&q=80",
-      caption: "Mencicipi olahan tradisional nusantara hangat yang nikmat dan menggugah selera.",
-      createdAt: "1 hari lalu",
-      name: "Sahabat Kareba",
-      email: "iditona5@gmail.com",
-      user: "kamu",
-      init: "K",
-      isMyPost: true,
-    },
-  ]);
+  // Helper pemeriksa apakah suatu postingan adalah media dummy bawaan lama
+  const isDummyMedia = (item: any) => {
+    if (!item) return true;
+    const id = String(item.id || "");
+    const img = String(item.img || item.imageUrl || item.thumbnail || "");
+    const text = String(item.text || item.title || item.caption || "");
+    if (
+      id.startsWith("post-") ||
+      id.startsWith("feed-sample-") ||
+      id === "feed-2" ||
+      id.startsWith("ad-kopi-") ||
+      id.startsWith("ad-rental-")
+    ) {
+      return true;
+    }
+    if (img.includes("unsplash.com") || img.includes("commondatastorage.googleapis.com")) {
+      return true;
+    }
+    if (
+      text.includes("Senja hari ini, tenang banget") ||
+      text.includes("Pesona Pesisir Bahari") ||
+      text.includes("Jembatan Utama Kota") ||
+      text.includes("Kuliner Tradisional") ||
+      text.includes("Pantai Indah") ||
+      text.includes("Pemandangan pegunungan hijau") ||
+      text.includes("Selamat datang di Kareba'Ta! Wadah digital")
+    ) {
+      return true;
+    }
+    return false;
+  };
 
-  // State untuk Feed Vertikal
-  const [feed, setFeed] = useState<FeedItem[]>([
-    {
-      id: "post-1",
-      user: "warga_kareba",
-      init: "W",
-      name: "Kawan Warga Kareba (Kamu)",
-      email: "iditona5@gmail.com",
-      time: "2 jam lalu",
-      text: "Senja hari ini, tenang banget 🌅 Menikmati semilir angin di pesisir bersama kawan-kawan. (Foto Horizontal - Tampil Rasio Asli)",
-      img: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80",
-      mediaType: "image",
-      like: 0,
-      isLiked: false,
-      location: "Pesisir Barat",
-      isMyPost: true,
-      comments: [
-        {
-          id: "c-sample-1",
-          user: "andi_kareba",
-          text: "Indah sekali pemandangan senja ini!",
-          time: "1 jam lalu",
-          likes: 12,
-          isLiked: false,
-        },
-        {
-          id: "c-sample-2",
-          user: "warga_kareba",
-          text: "Terima kasih kanda! Yuk mampir sore-sore.",
-          time: "30 menit lalu",
-          likes: 4,
-          isLiked: true,
-        },
-      ],
-    },
-    {
-      id: "feed-2",
-      user: "pesona_nusantara",
-      init: "P",
-      name: "Pesona Alam Nusantara",
-      email: "pesona@karebata.id",
-      time: "3 jam lalu",
-      text: "Pemandangan pegunungan hijau yang memagari kawasan lembah 🏔️ Segar dan asri sekali!",
-      img: "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=800&auto=format&fit=crop&q=80",
-      mediaType: "image",
-      like: 0,
-      isLiked: false,
-      location: "Puncak Bukit Hijau",
-      isMyPost: false,
-      comments: [],
-    },
-    {
-      id: "post-video-1",
-      user: "warga_kareba",
-      init: "W",
-      name: "Sahabat Kareba (Kamu)",
-      email: "iditona5@gmail.com",
-      time: "30 menit lalu",
-      text: "Rekaman video senja dan ombak tenang di pesisir bahari. Suasana adem dan damai.",
-      img: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-      thumbnail: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop&q=80",
-      mediaType: "video",
-      like: 0,
-      isLiked: false,
-      location: "Kawasan Pesisir Barat",
-      isMyPost: true,
-      comments: [],
-    },
-    {
-      id: "post-2",
-      user: "warga_kareba",
-      init: "W",
-      name: "Sahabat Kareba (Kamu)",
-      email: "iditona5@gmail.com",
-      time: "5 jam lalu",
-      text: "Ikon kebanggaan kota yang menghubungkan wilayah pesisir, bersinar indah di malam hari.",
-      img: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=600&auto=format&fit=crop&q=80",
-      mediaType: "image",
-      like: 0,
-      isLiked: false,
-      location: "Pusat Kota",
-      isMyPost: true,
-      comments: [],
-    },
-    {
-      id: "post-3",
-      user: "warga_kareba",
-      init: "W",
-      name: "Sahabat Kareba (Kamu)",
-      email: "iditona5@gmail.com",
-      time: "1 hari lalu",
-      text: "Mencicipi olahan tradisional nusantara hangat yang nikmat dan menggugah selera.",
-      img: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&auto=format&fit=crop&q=80",
-      mediaType: "image",
-      like: 0,
-      isLiked: false,
-      location: "Sentra Kuliner",
-      isMyPost: true,
-      comments: [],
-    },
-  ]);
+  // State untuk "Postingan Kamu" (Carousel Kabar Kamu - tersimpan permanen di memori lokal, bersih tanpa dummy)
+  const [posts, setPosts] = useState<PostItem[]>(() => {
+    try {
+      const stored = localStorage.getItem("karebata_user_posts");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) return parsed.filter((p) => !isDummyMedia(p));
+      }
+    } catch {}
+    return [];
+  });
+
+  // State untuk Feed Vertikal (tersimpan permanen di memori lokal & Firestore, bersih tanpa postingan dummy)
+  const [feed, setFeed] = useState<FeedItem[]>(() => {
+    try {
+      const stored = localStorage.getItem("karebata_local_feed");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) return parsed.filter((f) => !isDummyMedia(f));
+      }
+    } catch {}
+    return [];
+  });
+
+  // Simpan secara otomatis setiap perubahan feed & posts ke localStorage agar tidak pernah hilang saat aplikasi dimuat ulang
+  useEffect(() => {
+    try {
+      localStorage.setItem("karebata_user_posts", JSON.stringify(posts));
+    } catch {}
+  }, [posts]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("karebata_local_feed", JSON.stringify(feed));
+    } catch {}
+  }, [feed]);
 
   // Total suka/love yang didapatkan oleh postingan kabar milik pengguna sendiri
   // (Jika pengguna menyukai kabar orang lain, angka love di profil sendiri TIDAK akan bertambah)
@@ -967,9 +873,8 @@ export default function KarebaFeedFinal() {
   // Sinkronisasi postingan real-time dari Firestore proyek pribadi
   useEffect(() => {
     const unsubscribe = listenToFirestorePosts((remotePosts) => {
-      const remoteList = remotePosts || [];
+      const remoteList = (remotePosts || []).filter((p) => !isDummyMedia(p));
       const remoteIds = new Set(remoteList.map((p) => p.id));
-      const remoteImgUrls = new Set(remoteList.map((p) => p.img).filter(Boolean));
 
       setFeed((prevFeed) => {
         const prevMap = new Map(prevFeed.map((p) => [p.id, p]));
@@ -978,8 +883,8 @@ export default function KarebaFeedFinal() {
         const updatedRemote = remoteList.map((r) => {
           const prev = prevMap.get(r.id);
           const isLiked =
-            likedPostIds.includes(r.id) ||
-            (currentUid && r.likedBy && r.likedBy.some((u) => u.toLowerCase() === currentUid)) ||
+            likedPostIdsRef.current.includes(r.id) ||
+            (currentUid && r.likedBy && r.likedBy.some((u: string) => u.toLowerCase() === currentUid)) ||
             Boolean(prev?.isLiked);
           return {
             ...r,
@@ -987,33 +892,43 @@ export default function KarebaFeedFinal() {
           };
         });
 
-        // Sinkronisasi dua arah:
-        // Jika postingan dinamis (feed-...) dihapus di Firebase console,
-        // postingan tersebut tidak akan ada di remoteIds, sehingga otomatis ikut hilang dari feed aplikasi.
-        const existingUnique = prevFeed.filter((p) => {
-          if (remoteIds.has(p.id)) return false; // Sudah diperbarui dari remote
-          if (p.id.startsWith("feed-")) return false; // Dihapus di penyimpanan Firestore
-          return true; // Postingan sampel bawaan aplikasi tetap dipertahankan
-        });
+        // Pertahankan semua postingan lokal yang baru dibuat dan belum tersinkron di remote (JANGAN DIHAPUS!)
+        const localOnly = prevFeed.filter((p) => !remoteIds.has(p.id));
 
-        return [...updatedRemote, ...existingUnique];
+        return [...updatedRemote, ...localOnly];
       });
 
       // Sinkronkan juga daftar "Kabar Kamu" (carousel atas)
       setPosts((prevPosts) => {
-        return prevPosts.filter((p) => {
-          if (p.id.startsWith("feed-")) {
-            return remoteIds.has(p.id) || Boolean(p.img && remoteImgUrls.has(p.img));
-          }
-          return true;
-        });
+        const remoteUserPosts: PostItem[] = remoteList
+          .filter((p) => isMyPost(p))
+          .map((p) => ({
+            id: p.id,
+            title: p.text || "Kabar Kamu",
+            loc: p.location || "Wilayah Sekitar",
+            img: p.img,
+            thumbnail: p.thumbnail,
+            mediaType: p.mediaType || "image",
+            caption: p.text || "",
+            createdAt: p.time || "Baru saja",
+            name: p.name || userName,
+            email: p.email || userEmail,
+            user: p.user || userName,
+            init: p.init || initial,
+            isMyPost: true,
+          }));
+
+        const remoteUserIds = new Set(remoteUserPosts.map((p) => p.id));
+        const localUserPosts = prevPosts.filter((p) => !remoteUserIds.has(p.id) && isMyPost(p));
+
+        return [...remoteUserPosts, ...localUserPosts];
       });
     });
 
     return () => {
       if (typeof unsubscribe === "function") unsubscribe();
     };
-  }, [likedPostIds, currentUser, userName]);
+  }, []);
 
   // Berlangganan data Pengaturan WhatsApp Admin & Bantuan Warga secara real-time
   useEffect(() => {
@@ -1835,8 +1750,8 @@ export default function KarebaFeedFinal() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-neutral-100 text-neutral-900 flex justify-center selection:bg-[#00632B] selection:text-white">
-      <div id="karebata-feed-app" className="w-full max-w-md bg-white min-h-screen pb-8 relative font-sans shadow-sm flex flex-col">
+    <div className={`w-full bg-neutral-100 text-neutral-900 flex justify-center selection:bg-[#00632B] selection:text-white ${displayFeed.length === 0 ? "h-screen overflow-hidden" : "min-h-screen"}`}>
+      <div id="karebata-feed-app" className={`w-full max-w-md bg-white relative font-sans shadow-sm flex flex-col ${displayFeed.length === 0 ? "h-full overflow-hidden" : "min-h-screen pb-8"}`}>
         {/* INPUT TERSEMBUNYI - INI KUNCINYA, TIDAK KELIHATAN */}
         <input
           id="custom-file-input"
@@ -2399,15 +2314,12 @@ export default function KarebaFeedFinal() {
                         {isVid ? (
                           <div className="relative h-20 w-full bg-neutral-100 flex items-center justify-center overflow-hidden rounded-lg">
                             <img
-                              src={p.thumbnail || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&auto=format&fit=crop&q=80"}
+                              src={p.thumbnail || p.img}
                               alt={p.title}
                               draggable={false}
                               onContextMenu={(e) => e.preventDefault()}
                               className="h-20 w-full object-cover rounded-lg pointer-events-none select-none"
                               style={{ WebkitTouchCallout: "none" }}
-                              onError={(e) => {
-                                e.currentTarget.src = "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&auto=format&fit=crop&q=80";
-                              }}
                             />
                             <div className="absolute inset-0 bg-black/35 flex items-center justify-center pointer-events-none">
                               <div className="w-6 h-6 rounded-full bg-black/60 backdrop-blur-xs flex items-center justify-center text-white shadow-sm border border-white/20">
@@ -2451,7 +2363,27 @@ export default function KarebaFeedFinal() {
             )
           ) : (
             /* KARTU KABAR KAMU (TAMPIL KETIKA KARTU TERSIMPAN TIDAK AKTIF) */
-            <CardCarousel id="user-posts-carousel" className="animate-fade-in">
+            posts.length === 0 ? (
+              <div className="w-full py-3.5 px-4 flex items-center justify-between bg-neutral-50/80 rounded-2xl border border-dashed border-neutral-200">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#00632B] flex items-center justify-center shrink-0">
+                    <CameraIcon className="w-4.5 h-4.5" />
+                  </div>
+                  <div className="min-w-0 text-left">
+                    <p className="text-xs font-bold text-neutral-800 truncate">Kabar Kamu Belum Ada</p>
+                    <p className="text-[11px] text-neutral-500">Mulai bagikan foto atau video pertamamu</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCameraClick}
+                  className="px-3 py-1.5 bg-[#00632B] hover:bg-[#004f22] text-white text-xs font-bold rounded-xl shrink-0 cursor-pointer shadow-2xs transition active:scale-95"
+                >
+                  Unggah
+                </button>
+              </div>
+            ) : (
+              <CardCarousel id="user-posts-carousel" className="animate-fade-in">
               {posts.map((p) => {
                 const isVid =
                   p.mediaType === "video" ||
@@ -2477,7 +2409,7 @@ export default function KarebaFeedFinal() {
                       {isVid ? (
                         <div className="relative h-20 w-full bg-neutral-100 flex items-center justify-center overflow-hidden rounded-lg">
                           <img
-                            src={p.thumbnail || "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&auto=format&fit=crop&q=80"}
+                            src={p.thumbnail || p.img}
                             alt={p.title}
                             loading="eager"
                             decoding="async"
@@ -2485,9 +2417,6 @@ export default function KarebaFeedFinal() {
                             onContextMenu={(e) => e.preventDefault()}
                             className="h-20 w-full object-cover rounded-lg pointer-events-none select-none"
                             style={{ WebkitTouchCallout: "none" }}
-                            onError={(e) => {
-                              e.currentTarget.src = "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=300&auto=format&fit=crop&q=80";
-                            }}
                           />
                           <div className="absolute inset-0 bg-black/35 flex items-center justify-center pointer-events-none">
                             <div className="w-6 h-6 rounded-full bg-black/60 backdrop-blur-xs flex items-center justify-center text-white shadow-sm border border-white/20">
@@ -2530,7 +2459,8 @@ export default function KarebaFeedFinal() {
                 );
               })}
             </CardCarousel>
-          )}
+          )
+        )}
         </section>
 
         {/* PEMBATAS SECTION RAPAT & GARIS ABU-ABU TERANG */}
@@ -2880,42 +2810,75 @@ export default function KarebaFeedFinal() {
 
           <div className="w-full bg-white">
             {displayFeed.length === 0 ? (
-              <div className="p-8 text-center space-y-2">
-                <Search className="w-8 h-8 text-neutral-300 mx-auto" />
-                <p className="text-sm font-semibold text-neutral-700">Tidak ada kabar ditemukan</p>
-                <p className="text-xs text-neutral-400">
-                  {searchCategory === "account"
-                    ? `Tidak ada postingan yang dibuat oleh akun "${searchQuery.replace(/^@+/, "")}".`
-                    : searchCategory === "location"
-                    ? `Tidak ada kabar dari lokasi "${searchQuery.replace(/^lokasi:\s*/i, "")}".`
-                    : searchCategory === "news"
-                    ? `Tidak ada berita yang cocok dengan "${searchQuery.replace(/^berita:\s*/i, "")}".`
-                    : `Tidak ditemukan kabar warga dengan kata kunci "${searchQuery}".`}
-                </p>
-                {searchCategory !== "all" && (
+              searchQuery.trim() ? (
+                <div className="p-8 text-center space-y-2">
+                  <Search className="w-8 h-8 text-neutral-300 mx-auto" />
+                  <p className="text-sm font-semibold text-neutral-700">Tidak ada kabar ditemukan</p>
+                  <p className="text-xs text-neutral-400">
+                    {searchCategory === "account"
+                      ? `Tidak ada postingan yang dibuat oleh akun "${searchQuery.replace(/^@+/, "")}".`
+                      : searchCategory === "location"
+                      ? `Tidak ada kabar dari lokasi "${searchQuery.replace(/^lokasi:\s*/i, "")}".`
+                      : searchCategory === "news"
+                      ? `Tidak ada berita yang cocok dengan "${searchQuery.replace(/^berita:\s*/i, "")}".`
+                      : `Tidak ditemukan kabar warga dengan kata kunci "${searchQuery}".`}
+                  </p>
+                  {searchCategory !== "all" && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchCategory("all")}
+                      className="mt-1 text-xs text-[#00632B] font-semibold hover:underline block mx-auto cursor-pointer"
+                    >
+                      Coba cari di semua kategori
+                    </button>
+                  )}
                   <button
                     type="button"
-                    onClick={() => setSearchCategory("all")}
-                    className="mt-1 text-xs text-[#00632B] font-semibold hover:underline block mx-auto cursor-pointer"
+                    onClick={() => {
+                      setSearchQuery("");
+                      setSearchCategory("all");
+                      setIsSearchOpen(false);
+                      setIsSearchSuggestionsOpen(false);
+                      setHighlightedPostId(null);
+                      scrollToTop();
+                    }}
+                    className="mt-2 text-xs bg-[#00632B] hover:bg-[#004f22] text-white font-medium px-4 py-2 rounded-full cursor-pointer shadow-xs transition"
                   >
-                    Coba cari di semua kategori
+                    Kembali ke Semua Kabar
                   </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearchQuery("");
-                    setSearchCategory("all");
-                    setIsSearchOpen(false);
-                    setIsSearchSuggestionsOpen(false);
-                    setHighlightedPostId(null);
-                    scrollToTop();
-                  }}
-                  className="mt-2 text-xs bg-[#00632B] hover:bg-[#004f22] text-white font-medium px-4 py-2 rounded-full cursor-pointer shadow-xs transition"
-                >
-                  Kembali ke Semua Kabar
-                </button>
-              </div>
+                </div>
+              ) : (
+                /* TAMPILAN BERSIH SAAT APLIKASI MASIH KOSONG SEPERTI APLIKASI LAIN */
+                <div className="py-16 px-6 text-center flex flex-col items-center justify-center space-y-3.5 animate-fade-in">
+                  <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[#00632B] shadow-2xs">
+                    <Newspaper className="w-8 h-8 stroke-[1.75]" />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="text-base font-bold text-neutral-900">Belum Ada Kabar Warga</h3>
+                    <p className="text-xs text-neutral-500 max-w-xs leading-relaxed">
+                      Aplikasi siap digunakan. Belum ada postingan warga yang diterbitkan. Jadilah yang pertama membagikan kabar!
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={handleCameraClick}
+                      className="flex items-center gap-1.5 px-4 py-2 bg-[#00632B] hover:bg-[#004f22] text-white text-xs font-bold rounded-full shadow-xs transition active:scale-95 cursor-pointer"
+                    >
+                      <CameraIcon className="w-3.5 h-3.5" />
+                      <span>Buka Kamera</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleGalleryClick}
+                      className="flex items-center gap-1.5 px-4 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-bold rounded-full transition active:scale-95 cursor-pointer"
+                    >
+                      <ImageIcon className="w-3.5 h-3.5" />
+                      <span>Pilih Galeri</span>
+                    </button>
+                  </div>
+                </div>
+              )
             ) : (
               displayFeed.map((f, index) => (
               <Fragment key={f.id}>
@@ -3297,7 +3260,8 @@ export default function KarebaFeedFinal() {
         {reportPostData && (
           <div
             id="report-post-modal-overlay"
-            className="fixed inset-0 z-50 bg-white flex flex-col max-w-md mx-auto animate-fade-in"
+            className="fixed inset-0 z-50 bg-white flex flex-col max-w-md mx-auto animate-fade-in touch-manipulation overscroll-none"
+            style={{ touchAction: "manipulation", overscrollBehavior: "none" }}
           >
             {/* Header Full Screen */}
             <div className="sticky top-0 z-10 bg-white border-b border-neutral-200 px-4 py-3.5 flex items-center justify-between shadow-xs">
@@ -3415,7 +3379,7 @@ export default function KarebaFeedFinal() {
                   onChange={(e) => setReportDetails(e.target.value)}
                   placeholder="Jelaskan detail tindakan atau menit/bagian yang melanggar..."
                   rows={3}
-                  className="w-full bg-neutral-50 border border-neutral-300 rounded-xl p-3 text-xs text-neutral-900 placeholder-neutral-400 outline-none focus:border-red-500 focus:bg-white transition resize-none"
+                  className="w-full bg-neutral-50 border border-neutral-300 rounded-xl p-3 text-base text-neutral-900 placeholder-neutral-400 outline-none focus:border-red-500 focus:bg-white transition resize-none"
                 />
               </div>
 

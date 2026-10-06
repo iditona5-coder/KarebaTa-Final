@@ -74,7 +74,7 @@ body {
 }
 
 /* Izinkan seleksi & pengetikan teks hanya pada kolom formulir (input & textarea) */
-input, textarea, [contenteditable="true"] {
+input, textarea, select, [contenteditable="true"] {
   -webkit-user-select: text !important;
   -moz-user-select: text !important;
   -ms-user-select: text !important;
@@ -85,6 +85,16 @@ input, textarea, [contenteditable="true"] {
   -moz-appearance: none;
   appearance: none;
   border-radius: 0;
+  /* Aturan mutlak anti auto-zoom browser HP (iOS Safari & Android Chrome):
+     Font-size minimal 16px mutlak diperlukan agar layar tidak ter-zoom otomatis saat pengguna mengetuk kolom input */
+  font-size: 16px !important;
+}
+
+/* Kunci pencegahan zoom layar di seluruh viewport */
+html, body, #root, #karebata-feed-app {
+  touch-action: pan-x pan-y !important;
+  -webkit-text-size-adjust: 100% !important;
+  text-size-adjust: 100% !important;
 }
 
 /* Matikan tombol silang bawaan search di browser webkit dan tombol panah di number input */

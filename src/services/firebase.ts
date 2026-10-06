@@ -5,7 +5,10 @@
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import {
+  initializeFirestore,
   getFirestore,
+  persistentLocalCache,
+  setLogLevel,
   collection,
   doc,
   setDoc,
@@ -35,7 +38,7 @@ import {
   signOut, 
   onAuthStateChanged, 
   setPersistence,
-  browserSessionPersistence,
+  browserLocalPersistence,
   User 
 } from 'firebase/auth';
 export type { User };
@@ -57,11 +60,26 @@ export const firebaseConfig = {
 // Inisialisasi Firebase App
 export const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-// Inisialisasi Firestore & Auth dengan Session Persistence (Aman saat aplikasi ditutup)
-export const db: Firestore = getFirestore(app);
+// Redam log peringatan offline berkala
+try {
+  setLogLevel('error');
+} catch {}
+
+// Inisialisasi Firestore dengan auto-detect long polling dan persistent local cache
+export const db: Firestore = (() => {
+  try {
+    return initializeFirestore(app, {
+      experimentalAutoDetectLongPolling: true,
+      localCache: persistentLocalCache(),
+    });
+  } catch {
+    return getFirestore(app);
+  }
+})();
+
 export const auth: Auth = getAuth(app);
 if (typeof window !== "undefined") {
-  setPersistence(auth, browserSessionPersistence).catch(() => {});
+  setPersistence(auth, browserLocalPersistence).catch(() => {});
 }
 
 /**
@@ -268,9 +286,7 @@ export function loginAsSimulatedUser(email: string = PRIMARY_ADMIN_EMAIL, displa
     uid: "user-sim-" + (isAdm ? "admin" : "warga"),
     email: email.trim(),
     displayName: name,
-    photoURL: isAdm
-      ? "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&q=80"
-      : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80",
+    photoURL: null,
     emailVerified: true,
     isAnonymous: false,
     metadata: {} as any,
@@ -308,7 +324,7 @@ export async function loginWithGoogle(): Promise<{ user: User | null; error?: st
 
   isLoginInProgress = true;
   try {
-    await setPersistence(auth, browserSessionPersistence);
+    await setPersistence(auth, browserLocalPersistence);
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
     const result = await signInWithPopup(auth, provider);

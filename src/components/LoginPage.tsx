@@ -106,7 +106,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
             className="text-xs sm:text-sm font-extrabold tracking-[0.12em] text-[#E5A000] mt-1.5 uppercase"
             style={{ fontFamily: "'Poppins', system-ui, sans-serif" }}
           >
-            beritamu suaramu
+            beritamu, suaramu
           </p>
 
           <p className="text-xs text-neutral-600 mt-2.5 max-w-xs leading-relaxed font-normal">
@@ -232,7 +232,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
       {/* Footer Bersih */}
       <footer className="w-full max-w-md mx-auto px-6 py-3 text-center shrink-0">
         <p className="text-[11px] text-neutral-500">
-          © {new Date().getFullYear()} Kareba'Ta — Beritamu Suaramu
+          © {new Date().getFullYear()} Kareba'Ta — Beritamu, Suaramu
         </p>
       </footer>
     </div>

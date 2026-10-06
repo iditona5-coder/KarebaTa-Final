@@ -123,40 +123,9 @@ export interface AdSettings {
 }
 
 export const DEFAULT_AD_SETTINGS: AdSettings = {
-  isEnabled: true,
+  isEnabled: false,
   frequency: 4,
-  ads: [
-    {
-      id: "ad-kopi-1",
-      title: "Promo Kopi Robusta & Arabika Pilihan",
-      advertiserName: "Warkop Sudirman & Roastery",
-      badgeText: "Iklan Bersponsor",
-      description: "Nikmati aroma kopi asli racikan barista lokal. Diskon 20% khusus warga pembaca Kareba'Ta minggu ini!",
-      imageUrl: "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=800&q=80",
-      actionType: "whatsapp",
-      actionTarget: "085351037179",
-      actionButtonText: "Pesan via WhatsApp",
-      isActive: true,
-      createdAt: 1727760000000,
-      location: "Jl. Sudirman No. 18, Sentra Kuliner",
-      expiryDate: "Aktif Selamanya",
-    },
-    {
-      id: "ad-rental-2",
-      title: "Rental Mobil & Armada Perjalanan",
-      advertiserName: "Trans Mandiri Nusantara",
-      badgeText: "Iklan Bersponsor",
-      description: "Armada Avanza, Innova, Hiace bersih & prima. Melayani antar-jemput bandara dan carter sekeluarga.",
-      imageUrl: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&w=800&q=80",
-      actionType: "whatsapp",
-      actionTarget: "085351037179",
-      actionButtonText: "Sewa Mobil Sekarang",
-      isActive: true,
-      createdAt: 1727760000000,
-      location: "Pusat Kota & Wilayah Sekitar",
-      expiryDate: "Aktif Selamanya",
-    },
-  ],
+  ads: [],
 };
 
 export interface UserProfile {

@@ -154,7 +154,7 @@ export const SetupUsernamePage: React.FC<SetupUsernamePageProps> = ({
       {/* Footer */}
       <footer className="w-full border-t border-neutral-100 py-3.5 text-center bg-white">
         <p className="text-[11px] text-neutral-500">
-          © {new Date().getFullYear()} Kareba'Ta — Beritamu Suaramu
+          © {new Date().getFullYear()} Kareba'Ta — Beritamu, Suaramu
         </p>
       </footer>
     </div>
