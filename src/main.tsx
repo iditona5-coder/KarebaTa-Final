@@ -148,65 +148,11 @@ window.addEventListener(
   { passive: false }
 );
 
-// 5. Matikan gesture geser tepi layar (Edge swipe) yang memunculkan icon panah kembali bawaan browser
-let edgeTouchStartX = 0;
-let edgeTouchStartY = 0;
-
-window.addEventListener(
-  'touchstart',
-  (e) => {
-    if (e.touches && e.touches[0]) {
-      edgeTouchStartX = e.touches[0].clientX;
-      edgeTouchStartY = e.touches[0].clientY;
-    }
-  },
-  { passive: true }
-);
-
-window.addEventListener(
-  'touchmove',
-  (e) => {
-    if (e.touches && e.touches[0]) {
-      const currentX = e.touches[0].clientX;
-      const currentY = e.touches[0].clientY;
-      const diffX = currentX - edgeTouchStartX;
-      const diffY = currentY - edgeTouchStartY;
-
-      // Jika geser ke kanan dimulai dari tepi kiri layar (pemicu icon panah kembali bawaan browser)
-      if (edgeTouchStartX < 35 && diffX > 0 && Math.abs(diffX) > Math.abs(diffY)) {
-        if (e.cancelable) {
-          e.preventDefault();
-        }
-      }
-
-      // Kunci semua gestur geser mendatar di seluruh area aplikasi kecuali di dalam carousel horizontal
-      const target = e.target as HTMLElement | null;
-      const isInsideCarousel = target?.closest(
-        '.horizontal-scroll-container, [data-card-item], #card-media-carousel, #card-berita-carousel'
-      );
-
-      if (!isInsideCarousel && Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 5) {
-        if (e.cancelable) {
-          e.preventDefault();
-        }
-      }
-    }
-  },
-  { passive: false }
-);
-
-// 6. Catat waktu terakhir layar disentuh/digeser atau di-scroll untuk mencegah salah klik pada tombol selama navigasi
+// 5. Catat waktu terakhir layar di-scroll untuk mencegah salah klik pada tombol selama navigasi
 if (typeof window !== 'undefined') {
   (window as any).__KAREBATA_LAST_SCROLL_TIME__ = 0;
   window.addEventListener(
     'scroll',
-    () => {
-      (window as any).__KAREBATA_LAST_SCROLL_TIME__ = Date.now();
-    },
-    { passive: true }
-  );
-  window.addEventListener(
-    'touchmove',
     () => {
       (window as any).__KAREBATA_LAST_SCROLL_TIME__ = Date.now();
     },

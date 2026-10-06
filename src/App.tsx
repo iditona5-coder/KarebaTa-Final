@@ -176,21 +176,7 @@ export default function KarebaFeedFinal() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const toastTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const uploadSuccessTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const helpBtnTouchRef = useRef<{
-    x: number;
-    y: number;
-    startTime: number;
-    moved: boolean;
-    initiatedOnButton: boolean;
-    blockUntil: number;
-  }>({
-    x: 0,
-    y: 0,
-    startTime: 0,
-    moved: false,
-    initiatedOnButton: false,
-    blockUntil: 0,
-  });
+  const helpTapRef = useRef<{ x: number; y: number; time: number } | null>(null);
   const [uploadStatus, setUploadStatus] = useState<"idle" | "uploading" | "success">("idle");
   const [lastUploadedPost, setLastUploadedPost] = useState<{
     id: string;
@@ -1970,15 +1956,15 @@ export default function KarebaFeedFinal() {
           </div>
         )}
 
-        {/* APP HEADER & PAPAN TEKS BERJALAN DI BAWAH BAR - Menempel Kokoh di Atas (Sticky Top) */}
+        {/* APP HEADER & PAPAN TEKS BERJALAN DI BAWAH BAR - Menempel Kokoh di Atas (Fixed Top) */}
         <div
           id="sticky-header-container"
-          className="sticky top-0 z-40 bg-white w-full shadow-xs"
+          className="fixed top-0 left-0 right-0 z-40 bg-white w-full max-w-md mx-auto shadow-xs border-b border-neutral-100 overflow-hidden"
           style={{ touchAction: "pan-y" }}
         >
           <header
             id="karebata-feed-header"
-            className="bg-white border-b border-neutral-200 px-3.5 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between transition-all duration-150 min-h-[53px]"
+            className="bg-white border-b border-neutral-200 px-3.5 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between transition-all duration-150 min-h-[53px] overflow-hidden w-full"
             style={{ touchAction: "pan-y" }}
           >
             {isSearchOpen ? (
@@ -2151,6 +2137,9 @@ export default function KarebaFeedFinal() {
             }}
           />
         </div>
+
+        {/* Spacer Pengganti Ruang Header Fixed agar feed tidak tertutup bar */}
+        <div className={isSearchOpen ? "h-[96px] shrink-0" : "h-[81px] shrink-0"} aria-hidden="true" />
 
         {/* FITUR TARIK/GESER KE BAWAH UNTUK MEMPERBARUI (PULL-TO-REFRESH KUSTOM DENGAN KONTEN TETAP KOKOH TANPA TERGESER TURUN) */}
         <PullToRefresh onRefresh={handlePullRefresh}>
@@ -2797,53 +2786,36 @@ export default function KarebaFeedFinal() {
                   id="help-kabar-warga-btn"
                   type="button"
                   onTouchStart={(e) => {
-                    if (e.touches.length > 0) {
-                      helpBtnTouchRef.current = {
+                    if (e.touches.length === 1) {
+                      helpTapRef.current = {
                         x: e.touches[0].clientX,
                         y: e.touches[0].clientY,
-                        startTime: Date.now(),
-                        moved: false,
-                        initiatedOnButton: true,
-                        blockUntil: helpBtnTouchRef.current.blockUntil,
+                        time: Date.now(),
                       };
                     }
                   }}
-                  onTouchMove={(e) => {
-                    if (e.touches.length > 0) {
-                      const dx = Math.abs(e.touches[0].clientX - helpBtnTouchRef.current.x);
-                      const dy = Math.abs(e.touches[0].clientY - helpBtnTouchRef.current.y);
-                      if (dx > 4 || dy > 4) {
-                        helpBtnTouchRef.current.moved = true;
-                        helpBtnTouchRef.current.blockUntil = Date.now() + 1000;
+                  onTouchEnd={(e) => {
+                    if (!helpTapRef.current || e.changedTouches.length === 0) return;
+                    const touch = e.changedTouches[0];
+                    const dx = Math.abs(touch.clientX - helpTapRef.current.x);
+                    const dy = Math.abs(touch.clientY - helpTapRef.current.y);
+                    const duration = Date.now() - helpTapRef.current.time;
+                    helpTapRef.current = null;
+
+                    // HANYA buka jika sentuhan benar-benar ketukan diam di tempat (dx & dy < 5px) dan durasi wajar tap (60-450ms)
+                    // Jika jari bergerak (sedang scrolling atau mengusap feed), abaikan total!
+                    if (dx < 5 && dy < 5 && duration >= 60 && duration <= 450) {
+                      const lastScroll = (window as any).__KAREBATA_LAST_SCROLL_TIME__ || 0;
+                      if (Date.now() - lastScroll > 350) {
+                        setIsHelpOpen(true);
                       }
                     }
                   }}
-                  onTouchEnd={() => {
-                    const elapsed = Date.now() - helpBtnTouchRef.current.startTime;
-                    if (helpBtnTouchRef.current.moved || elapsed > 500) {
-                      helpBtnTouchRef.current.blockUntil = Date.now() + 1000;
-                    }
-                  }}
                   onClick={(e) => {
-                    const now = Date.now();
-                    const lastGlobalScroll = (window as any).__KAREBATA_LAST_SCROLL_TIME__ || 0;
-
-                    // Jika ada aktivitas scroll layar dalam 600ms terakhir, atau jari sempat bergeser > 4px:
-                    // BLOKIR TOTAL KLIK INI AGAR TIDAK TERBUKA SAAT MENGGULIR FEED!
-                    if (
-                      now - lastGlobalScroll < 600 ||
-                      now < helpBtnTouchRef.current.blockUntil ||
-                      helpBtnTouchRef.current.moved ||
-                      !helpBtnTouchRef.current.initiatedOnButton
-                    ) {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      helpBtnTouchRef.current.initiatedOnButton = false;
-                      return;
+                    // Hanya izinkan klik mouse di komputer desktop (bukan perangkat layar sentuh)
+                    if (typeof window !== "undefined" && !("ontouchstart" in window)) {
+                      setIsHelpOpen(true);
                     }
-
-                    helpBtnTouchRef.current.initiatedOnButton = false;
-                    setIsHelpOpen(true);
                   }}
                   className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-amber-950 bg-gradient-to-r from-amber-100 via-amber-50 to-yellow-100 hover:from-amber-200 hover:to-yellow-200 active:from-amber-300 active:to-yellow-300 rounded-lg border border-amber-300/80 shadow-2xs transition-all active:scale-95 cursor-pointer shrink-0 ml-2"
                   aria-label="Layanan Pasang Iklan Sponsor & Promosi UMKM"
