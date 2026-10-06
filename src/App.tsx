@@ -3125,7 +3125,7 @@ export default function KarebaFeedFinal() {
                     aria-label="Bagikan"
                   >
                     <Share2 className="w-4 h-4" />
-                    <span>Bagikan{f.shares && f.shares > 0 ? ` (${f.shares})` : ""}</span>
+                    <span>Bagikan</span>
                   </button>
 
                   {/* Sesuai aturan kepemilikan:

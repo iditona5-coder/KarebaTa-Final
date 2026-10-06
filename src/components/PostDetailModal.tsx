@@ -231,7 +231,7 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
                     isLiked ? "fill-red-500 text-red-500" : "text-neutral-500"
                   }`}
                 />
-                <span>Suka{likeCount > 0 ? ` (${likeCount})` : ""}</span>
+                <span>Suka</span>
               </button>
             )}
 
@@ -245,7 +245,7 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
               aria-label="Bagikan"
             >
               <Share2 className="w-4 h-4" />
-              <span>Bagikan{feedItem?.shares && feedItem.shares > 0 ? ` (${feedItem.shares})` : ""}</span>
+              <span>Bagikan</span>
             </button>
 
             {/* Sesuai aturan kepemilikan:
