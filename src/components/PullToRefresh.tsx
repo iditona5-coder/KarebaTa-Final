@@ -25,10 +25,10 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({ onRefresh, childre
     onRefreshRef.current = onRefresh;
   }, [onRefresh]);
 
-  // Ambang batas tarikan yang mantap dan disengaja (tidak gampang terpicu oleh scroll tak sengaja)
-  const THRESHOLD = 80;
-  // Deadzone awal: abaikan gerakan di bawah 20px agar scroll ringan tidak memicu tarikan
-  const DEADZONE = 20;
+  // Ambang batas tarikan yang responsif, nyaman, dan mudah dijangkau jempol
+  const THRESHOLD = 52;
+  // Deadzone awal kecil (8px) agar indikator langsung merespons saat ditarik ke bawah
+  const DEADZONE = 8;
 
   const isModalOrFullscreenActive = () => {
     if (typeof document === "undefined") return false;
@@ -59,8 +59,8 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({ onRefresh, childre
         return;
       }
       const scrollTop = getScrollTop();
-      // Hanya mulai mendengarkan jika posisi layar benar-benar di puncak paling atas (<= 1)
-      if (scrollTop <= 1) {
+      // Mulai mendengarkan jika posisi layar di puncak atas (<= 5px)
+      if (scrollTop <= 5) {
         const touch = e.touches[0];
         startXRef.current = touch.clientX;
         startYRef.current = touch.clientY;
@@ -89,7 +89,7 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({ onRefresh, childre
       const diffY = touch.clientY - startYRef.current;
       const scrollTop = getScrollTop();
 
-      // Jika jari bergerak mendatar (misal geser carousel atau swipe layar), batalkan tarikan
+      // Jika jari bergerak mendatar, batalkan tarikan
       if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 12) {
         isGestureLockedRef.current = true;
         isDraggingRef.current = false;
@@ -100,17 +100,17 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({ onRefresh, childre
       }
 
       // Pastikan posisi tetap di puncak dan ditarik ke bawah melampaui deadzone awal
-      if (diffY > DEADZONE && scrollTop <= 1) {
+      if (diffY > DEADZONE && scrollTop <= 5) {
         const effectivePull = diffY - DEADZONE;
-        // Hambatan elastis (resistance) tegas: butuh tarikan jempol ~200px agar mencapai THRESHOLD 80
-        const damped = Math.min(95, effectivePull * 0.4);
+        // Damping yang responsif dan elastis
+        const damped = Math.min(80, effectivePull * 0.6);
 
         pullDistanceRef.current = damped;
         setPullDistance(damped);
         setCanPull(damped >= THRESHOLD);
 
-        // Hanya cegah scroll browser jika tarikan sudah jelas dan disengaja (> 40px)
-        if (damped > 40 && e.cancelable) {
+        // Cegah scroll browser jika tarikan ke bawah sudah jelas
+        if (damped > 25 && e.cancelable) {
           e.preventDefault();
         }
       } else {
@@ -133,16 +133,16 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({ onRefresh, childre
 
       const finalDistance = pullDistanceRef.current;
 
-      // Hanya segarkan jika tarikan benar-benar melampaui batas mantap (THRESHOLD)
+      // Hanya segarkan jika tarikan melampaui ambang batas THRESHOLD
       if (finalDistance >= THRESHOLD) {
         isRefreshingRef.current = true;
         setIsRefreshing(true);
-        setPullDistance(52);
-        pullDistanceRef.current = 52;
+        setPullDistance(50);
+        pullDistanceRef.current = 50;
 
         if (typeof navigator !== "undefined" && navigator.vibrate) {
           try {
-            navigator.vibrate(20);
+            navigator.vibrate(25);
           } catch {
             // Abaikan
           }
@@ -151,9 +151,10 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({ onRefresh, childre
         try {
           await Promise.all([
             Promise.resolve(onRefreshRef.current()),
-            new Promise((resolve) => setTimeout(resolve, 1100)),
+            new Promise((resolve) => setTimeout(resolve, 900)),
           ]);
           setIsCompleted(true);
+          // Tampilkan notifikasi pill sukses selama 1.2 detik agar terbaca jelas oleh pengguna
           setTimeout(() => {
             isRefreshingRef.current = false;
             setIsRefreshing(false);
@@ -161,7 +162,7 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({ onRefresh, childre
             pullDistanceRef.current = 0;
             setPullDistance(0);
             setCanPull(false);
-          }, 600);
+          }, 1200);
         } catch {
           isRefreshingRef.current = false;
           setIsRefreshing(false);
@@ -171,37 +172,72 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({ onRefresh, childre
           setCanPull(false);
         }
       } else {
-        // Jika tidak mencapai batas tarikan (misal tidak sengaja tergeser sedikit), kembalikan posisi tanpa memuat ulang
         pullDistanceRef.current = 0;
         setPullDistance(0);
         setCanPull(false);
       }
     };
 
+    // Dukungan drag mouse untuk pengujian di komputer desktop & pratinjau AI Studio
+    const handleMouseDown = (e: MouseEvent) => {
+      if (e.button !== 0 || isRefreshingRef.current || isModalOrFullscreenActive()) return;
+      if (getScrollTop() <= 5) {
+        startXRef.current = e.clientX;
+        startYRef.current = e.clientY;
+        isDraggingRef.current = true;
+        isGestureLockedRef.current = false;
+      }
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDraggingRef.current || isRefreshingRef.current || isGestureLockedRef.current) return;
+      const diffX = e.clientX - startXRef.current;
+      const diffY = e.clientY - startYRef.current;
+      if (diffY > DEADZONE && getScrollTop() <= 5) {
+        const effectivePull = diffY - DEADZONE;
+        const damped = Math.min(80, effectivePull * 0.6);
+        pullDistanceRef.current = damped;
+        setPullDistance(damped);
+        setCanPull(damped >= THRESHOLD);
+      }
+    };
+
+    const handleMouseUp = () => {
+      if (isDraggingRef.current) {
+        handleTouchEnd();
+      }
+    };
+
     window.addEventListener("touchstart", handleTouchStart, { passive: true });
     window.addEventListener("touchmove", handleTouchMove, { passive: false });
     window.addEventListener("touchend", handleTouchEnd, { passive: true });
+    window.addEventListener("mousedown", handleMouseDown);
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
 
     return () => {
       window.removeEventListener("touchstart", handleTouchStart);
       window.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("touchend", handleTouchEnd);
+      window.removeEventListener("mousedown", handleMouseDown);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
     };
   }, []);
 
   const rotationDeg = Math.min(360, (pullDistance / THRESHOLD) * 270);
-  // Indikator hanya mulai terlihat jika tarikan sudah mencapai jarak minimal 25px (mencegah kedipan saat scroll biasa)
-  const isVisible = (pullDistance >= 25) || isRefreshing;
-  const translateY = isVisible ? Math.min(pullDistance, 70) : -60;
+  // Indikator muncul segera setelah ditarik melampaui 12px
+  const isVisible = pullDistance >= 12 || isRefreshing || isCompleted;
+  const translateY = isVisible ? Math.min(pullDistance, 55) : -60;
 
   return (
     <div className="relative w-full">
       {/* INDIKATOR PULL-TO-REFRESH DI BAWAH BAR STICKY HEADER */}
       <div
-        className="fixed top-[88px] left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-100 ease-out max-w-[calc(100%-32px)]"
+        className="fixed top-[88px] left-1/2 -translate-x-1/2 z-50 pointer-events-none transition-all duration-150 ease-out max-w-[calc(100%-32px)]"
         style={{
           transform: `translate(-50%, ${translateY}px)`,
-          opacity: isRefreshing ? 1 : isVisible ? Math.min(1, Math.max(0, (pullDistance - 25) / 25)) : 0,
+          opacity: isRefreshing || isCompleted ? 1 : isVisible ? Math.min(1, Math.max(0, (pullDistance - 10) / 20)) : 0,
         }}
         aria-live="polite"
       >
