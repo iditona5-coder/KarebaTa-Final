@@ -73,29 +73,36 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
 
   return (
     <div
-      id="post-fullscreen-modal"
-      className="fixed inset-0 z-50 bg-neutral-100 flex flex-col w-full h-full max-w-md mx-auto overflow-y-auto animate-fade-in select-none"
+      className="fixed inset-0 z-50 bg-white flex justify-center overflow-hidden overscroll-none select-none animate-fade-in"
+      style={{ overscrollBehavior: "none" }}
     >
-      {/* Sticky Header Navigasi (Bersih tanpa icon X) */}
-      <header className="sticky top-0 z-40 bg-white border-b border-neutral-200 px-4 py-3 flex items-center justify-between shadow-2xs">
-        <button
-          id="close-post-fullscreen-btn"
-          type="button"
-          onClick={onClose}
-          className="flex items-center gap-2 text-neutral-800 hover:text-[#00632B] transition active:scale-95 cursor-pointer font-bold text-sm"
-          aria-label="Kembali ke beranda"
-        >
-          <ArrowLeft className="w-5 h-5 text-neutral-800" />
-          <span>Kabar Warga</span>
-        </button>
-      </header>
+      <div
+        id="post-fullscreen-modal"
+        className="w-full h-full max-w-md bg-white flex flex-col relative overflow-hidden"
+      >
+        {/* Sticky Header Navigasi (Bersih tanpa icon X) */}
+        <header className="sticky top-0 z-40 bg-white border-b border-neutral-200 px-4 py-3 flex items-center justify-between shadow-2xs shrink-0">
+          <button
+            id="close-post-fullscreen-btn"
+            type="button"
+            onClick={onClose}
+            className="flex items-center gap-2 text-neutral-800 hover:text-[#00632B] transition active:scale-95 cursor-pointer font-bold text-sm"
+            aria-label="Kembali ke beranda"
+          >
+            <ArrowLeft className="w-5 h-5 text-neutral-800" />
+            <span>Kabar Warga</span>
+          </button>
+        </header>
 
-      {/* Konten Postingan: TAMPILAN PERSIS SAMA SEPERTI DI FEED */}
-      <div className="flex-1 bg-white overflow-y-auto">
-        <article
-          id={`feed-post-${post.id}`}
-          className="w-full bg-white space-y-3 pt-3.5 pb-6"
+        {/* Konten Postingan: TAMPILAN PERSIS SAMA SEPERTI DI FEED */}
+        <div
+          className="flex-1 bg-white overflow-y-auto overscroll-contain"
+          style={{ overscrollBehavior: "contain", WebkitOverflowScrolling: "touch", touchAction: "pan-y" }}
         >
+          <article
+            id={`feed-post-${post.id}`}
+            className="w-full bg-white space-y-3 pt-3.5 pb-6"
+          >
           {/* Post Header: Nama & Waktu tetap satu baris, tidak turun ke bawah */}
           <div className="px-4 flex items-center justify-between">
             <div className="flex items-center gap-2.5 min-w-0">
@@ -295,5 +302,6 @@ export const PostDetailModal: React.FC<PostDetailModalProps> = ({
         </article>
       </div>
     </div>
-  );
+  </div>
+);
 };

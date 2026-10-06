@@ -356,7 +356,12 @@ export const FeedMedia: React.FC<FeedMediaProps> = ({
     return createPortal(
       <div
         id="karebata-fullscreen-modal"
-        className="fixed inset-0 z-[9999] bg-black text-white flex flex-col justify-between overflow-hidden select-none animate-fade-in"
+        className="fixed inset-0 z-[9999] bg-black text-white flex flex-col justify-between overflow-hidden select-none animate-fade-in overscroll-none"
+        style={{
+          overscrollBehavior: "none",
+          WebkitOverflowScrolling: "auto",
+          touchAction: "none",
+        }}
       >
         {/* Header Layar Penuh: Info Penulis, Lokasi & Waktu Bersih */}
         <header className="px-4 py-3.5 bg-gradient-to-b from-black/85 via-black/50 to-transparent flex items-center justify-between z-20 shrink-0">
