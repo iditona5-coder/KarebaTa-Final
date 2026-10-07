@@ -144,6 +144,8 @@ export const RunningTextBar: React.FC<RunningTextBarProps> = ({
     }
   };
 
+  if (items.length === 0) return null;
+
   return (
     <>
       {/* Papan Teks Berjalan Mandiri (Custom Engine Tanpa Tag Marquee Bawaan Browser & Tanpa Native Tooltip) */}

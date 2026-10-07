@@ -477,8 +477,6 @@ export default function KarebaFeedFinal() {
         time: idx === 0 ? "Baru saja" : item.time,
       }))
     );
-
-    showToast("Kabar berhasil diperbarui!");
   };
 
   // Helper untuk mengecek apakah suatu postingan adalah milik akun sendiri:
@@ -505,6 +503,11 @@ export default function KarebaFeedFinal() {
   const [activeCommentItem, setActiveCommentItem] = useState<FeedItem | null>(null);
   const [commentInputText, setCommentInputText] = useState("");
   const [activeSharePostId, setActiveSharePostId] = useState<string | null>(null);
+
+  const handleProfileAvatarClick = () => {
+    setNewUserNameInput(userName);
+    setIsEditProfileOpen(true);
+  };
 
   // Quick stats state: like, komentar, dan bagikan bernilai nol sebelum ada interaksi
   const [stats, setStats] = useState({
@@ -603,26 +606,39 @@ export default function KarebaFeedFinal() {
     const id = String(item.id || "");
     const img = String(item.img || item.imageUrl || item.thumbnail || "");
     const text = String(item.text || item.title || item.caption || "");
+    const user = String(item.user || item.name || "");
+
+    // Cek ID dummy bawaan lama
+    const legacyDummyIds = new Set([
+      "post-1", "post-2", "post-3", "post-4", "post-5",
+      "post-video-1", "post-video-2",
+      "feed-1", "feed-2", "feed-3", "feed-4", "feed-5",
+      "feed-sample-1", "feed-sample-2",
+      "ad-kopi-1", "ad-rental-1"
+    ]);
     if (
-      id.startsWith("post-") ||
+      legacyDummyIds.has(id) ||
       id.startsWith("feed-sample-") ||
-      id === "feed-2" ||
       id.startsWith("ad-kopi-") ||
       id.startsWith("ad-rental-")
     ) {
       return true;
     }
+    // Cek URL gambar dummy placeholder bawaan lama
     if (img.includes("unsplash.com") || img.includes("commondatastorage.googleapis.com")) {
       return true;
     }
+    // Cek teks placeholder lama & bersihkan semua unsur 'Dumai'
     if (
-      text.includes("Senja hari ini, tenang banget") ||
       text.includes("Pesona Pesisir Bahari") ||
       text.includes("Jembatan Utama Kota") ||
       text.includes("Kuliner Tradisional") ||
       text.includes("Pantai Indah") ||
       text.includes("Pemandangan pegunungan hijau") ||
-      text.includes("Selamat datang di Kareba'Ta! Wadah digital")
+      text.includes("Selamat datang di Kareba'Ta! Wadah digital") ||
+      text.includes("Senja hari ini, tenang banget") ||
+      text.toLowerCase().includes("dumai") ||
+      user.toLowerCase().includes("dumai")
     ) {
       return true;
     }
@@ -665,6 +681,19 @@ export default function KarebaFeedFinal() {
       localStorage.setItem("karebata_local_feed", JSON.stringify(feed));
     } catch {}
   }, [feed]);
+
+  // Otomatis gulir ke form unggah saat media dipilih agar tombol posting terlihat penuh dan tidak terpotong
+  useEffect(() => {
+    if (selectedImage) {
+      const timer = setTimeout(() => {
+        const composer = document.getElementById("media-post-composer-card");
+        if (composer) {
+          composer.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }
+      }, 120);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedImage]);
 
   // Total suka/love yang didapatkan oleh postingan kabar milik pengguna sendiri
   // (Jika pengguna menyukai kabar orang lain, angka love di profil sendiri TIDAK akan bertambah)
@@ -893,7 +922,7 @@ export default function KarebaFeedFinal() {
         });
 
         // Pertahankan semua postingan lokal yang baru dibuat dan belum tersinkron di remote (JANGAN DIHAPUS!)
-        const localOnly = prevFeed.filter((p) => !remoteIds.has(p.id));
+        const localOnly = prevFeed.filter((p) => !remoteIds.has(p.id) && !isDummyMedia(p));
 
         return [...updatedRemote, ...localOnly];
       });
@@ -919,7 +948,7 @@ export default function KarebaFeedFinal() {
           }));
 
         const remoteUserIds = new Set(remoteUserPosts.map((p) => p.id));
-        const localUserPosts = prevPosts.filter((p) => !remoteUserIds.has(p.id) && isMyPost(p));
+        const localUserPosts = prevPosts.filter((p) => !remoteUserIds.has(p.id) && isMyPost(p) && !isDummyMedia(p));
 
         return [...remoteUserPosts, ...localUserPosts];
       });
@@ -1390,8 +1419,8 @@ export default function KarebaFeedFinal() {
     const finalDesc = description.trim().slice(0, 500);
     const finalLoc = selectedLocation.trim().slice(0, 30);
     const postTitle = finalDesc.split("\n")[0].slice(0, 24) || "Momen Spesial";
-    const feedId = `feed-${Date.now()}`;
-    const postId = `post-${Date.now()}`;
+    const feedId = `kareba-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const postId = feedId;
 
     // LANGSUNG KOSONGKAN FORM (Media, Deskripsi, dan Lokasi HILANG SEKETIKA agar bisa langsung posting lagi)
     setSelectedImage(null);
@@ -1750,8 +1779,8 @@ export default function KarebaFeedFinal() {
   }
 
   return (
-    <div className={`w-full bg-neutral-100 text-neutral-900 flex justify-center selection:bg-[#00632B] selection:text-white ${displayFeed.length === 0 ? "h-screen overflow-hidden" : "min-h-screen"}`}>
-      <div id="karebata-feed-app" className={`w-full max-w-md bg-white relative font-sans shadow-sm flex flex-col ${displayFeed.length === 0 ? "h-full overflow-hidden" : "min-h-screen pb-8"}`}>
+    <div className="w-full bg-neutral-100 text-neutral-900 flex justify-center selection:bg-[#00632B] selection:text-white min-h-screen">
+      <div id="karebata-feed-app" className={`w-full max-w-md bg-white relative font-sans shadow-sm flex flex-col min-h-screen ${selectedImage ? "pb-36" : displayFeed.length === 0 ? "pb-28" : "pb-16"}`}>
         {/* INPUT TERSEMBUNYI - INI KUNCINYA, TIDAK KELIHATAN */}
         <input
           id="custom-file-input"
@@ -2005,7 +2034,7 @@ export default function KarebaFeedFinal() {
                 >
                   <KarebaTaLogo />
                 </button>
-                <div className="flex items-center gap-1 sm:gap-2">
+                <div className="flex items-center gap-1 sm:gap-1.5">
                   <button
                     id="header-search-trigger"
                     type="button"
@@ -2019,20 +2048,20 @@ export default function KarebaFeedFinal() {
                     <Search className="w-6 h-6" strokeWidth={2} />
                   </button>
                   <button
-                    id="header-camera-trigger"
+                    id="header-camera-btn"
                     type="button"
                     onClick={handleCameraClick}
                     className="p-2 text-neutral-800 hover:text-[#00632B] transition-all duration-150 active:scale-90 flex items-center justify-center cursor-pointer"
-                    aria-label="Kamera"
+                    aria-label="Buka Kamera"
                   >
                     <CameraIcon className="w-6 h-6" strokeWidth={2} />
                   </button>
                   <button
-                    id="header-gallery-trigger"
+                    id="header-gallery-btn"
                     type="button"
                     onClick={handleGalleryClick}
                     className="p-2 text-neutral-800 hover:text-[#00632B] transition-all duration-150 active:scale-90 flex items-center justify-center cursor-pointer"
-                    aria-label="Galeri Media"
+                    aria-label="Pilih Foto atau Video dari Galeri"
                   >
                     <ImageIcon className="w-6 h-6" strokeWidth={2} />
                   </button>
@@ -2364,52 +2393,65 @@ export default function KarebaFeedFinal() {
           ) : (
             /* KARTU KABAR KAMU (TAMPIL KETIKA KARTU TERSIMPAN TIDAK AKTIF) */
             posts.length === 0 ? (
-              <div className="w-full py-3.5 px-4 flex items-center justify-between bg-neutral-50/80 rounded-2xl border border-dashed border-neutral-200">
+              <div
+                onClick={handleCameraClick}
+                className="w-full py-3.5 px-4 flex items-center justify-between bg-neutral-50/80 hover:bg-neutral-100/70 rounded-2xl border border-dashed border-neutral-200 cursor-pointer transition active:scale-[0.99]"
+              >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-xl bg-emerald-50 text-[#00632B] flex items-center justify-center shrink-0">
-                    <CameraIcon className="w-4.5 h-4.5" />
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-[#00632B] flex items-center justify-center shrink-0">
+                    <CameraIcon className="w-5 h-5" />
                   </div>
                   <div className="min-w-0 text-left">
                     <p className="text-xs font-bold text-neutral-800 truncate">Kabar Kamu Belum Ada</p>
                     <p className="text-[11px] text-neutral-500">Mulai bagikan foto atau video pertamamu</p>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleCameraClick}
-                  className="px-3 py-1.5 bg-[#00632B] hover:bg-[#004f22] text-white text-xs font-bold rounded-xl shrink-0 cursor-pointer shadow-2xs transition active:scale-95"
-                >
-                  Unggah
-                </button>
               </div>
             ) : (
               <CardCarousel id="user-posts-carousel" className="animate-fade-in">
-              {posts.map((p) => {
-                const isVid =
-                  p.mediaType === "video" ||
-                  p.img?.startsWith("data:video") ||
-                  p.img?.includes(".mp4") ||
-                  p.img?.includes("video");
+                {posts.map((p) => {
+                  const isVid =
+                    p.mediaType === "video" ||
+                    p.img?.startsWith("data:video") ||
+                    p.img?.includes(".mp4") ||
+                    p.img?.includes("video");
 
-                return (
-                  <div
-                    key={p.id}
-                    id={`user-post-card-${p.id}`}
-                    data-card-item="true"
-                    onClick={() => {
-                      if (!(window as any).__KAREBATA_IS_DRAGGING_CARD__) {
-                        handleOpenCardInFeed(p);
-                      }
-                    }}
-                    onContextMenu={(e) => e.preventDefault()}
-                    className="relative w-[125px] min-w-[125px] max-w-[125px] bg-neutral-50 hover:bg-neutral-100 rounded-xl p-2 cursor-pointer transition-colors border border-neutral-200 shadow-xs shrink-0 select-none group"
-                    style={{ WebkitTouchCallout: "none" }}
-                  >
-                    <div className="relative overflow-hidden rounded-lg bg-neutral-100 h-20 w-full flex items-center justify-center select-none">
-                      {isVid ? (
-                        <div className="relative h-20 w-full bg-neutral-100 flex items-center justify-center overflow-hidden rounded-lg">
+                  return (
+                    <div
+                      key={p.id}
+                      id={`user-post-card-${p.id}`}
+                      data-card-item="true"
+                      onClick={() => {
+                        if (!(window as any).__KAREBATA_IS_DRAGGING_CARD__) {
+                          handleOpenCardInFeed(p);
+                        }
+                      }}
+                      onContextMenu={(e) => e.preventDefault()}
+                      className="relative w-[125px] min-w-[125px] max-w-[125px] bg-neutral-50 hover:bg-neutral-100 rounded-xl p-2 cursor-pointer transition-colors border border-neutral-200 shadow-xs shrink-0 select-none group"
+                      style={{ WebkitTouchCallout: "none" }}
+                    >
+                      <div className="relative overflow-hidden rounded-lg bg-neutral-100 h-20 w-full flex items-center justify-center select-none">
+                        {isVid ? (
+                          <div className="relative h-20 w-full bg-neutral-100 flex items-center justify-center overflow-hidden rounded-lg">
+                            <img
+                              src={p.thumbnail || p.img}
+                              alt={p.title}
+                              loading="eager"
+                              decoding="async"
+                              draggable={false}
+                              onContextMenu={(e) => e.preventDefault()}
+                              className="h-20 w-full object-cover rounded-lg pointer-events-none select-none"
+                              style={{ WebkitTouchCallout: "none" }}
+                            />
+                            <div className="absolute inset-0 bg-black/35 flex items-center justify-center pointer-events-none">
+                              <div className="w-6 h-6 rounded-full bg-black/60 backdrop-blur-xs flex items-center justify-center text-white shadow-sm border border-white/20">
+                                <Play className="w-3 h-3 fill-white translate-x-0.5" />
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
                           <img
-                            src={p.thumbnail || p.img}
+                            src={p.img}
                             alt={p.title}
                             loading="eager"
                             decoding="async"
@@ -2417,50 +2459,33 @@ export default function KarebaFeedFinal() {
                             onContextMenu={(e) => e.preventDefault()}
                             className="h-20 w-full object-cover rounded-lg pointer-events-none select-none"
                             style={{ WebkitTouchCallout: "none" }}
+                            onError={(e) => {
+                              e.currentTarget.style.display = "none";
+                            }}
                           />
-                          <div className="absolute inset-0 bg-black/35 flex items-center justify-center pointer-events-none">
-                            <div className="w-6 h-6 rounded-full bg-black/60 backdrop-blur-xs flex items-center justify-center text-white shadow-sm border border-white/20">
-                              <Play className="w-3 h-3 fill-white translate-x-0.5" />
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        <img
-                          src={p.img}
-                          alt={p.title}
-                          loading="eager"
-                          decoding="async"
-                          draggable={false}
-                          onContextMenu={(e) => e.preventDefault()}
-                          className="h-20 w-full object-cover rounded-lg pointer-events-none select-none"
-                          style={{ WebkitTouchCallout: "none" }}
-                          onError={(e) => {
-                            e.currentTarget.style.display = "none";
-                          }}
-                        />
-                      )}
-                      <span className="absolute bottom-1 right-1 text-[9px] bg-black/75 px-1.5 py-0.5 rounded text-white backdrop-blur-xs flex items-center gap-1 z-10 font-medium">
-                        {isVid ? (
-                          <>
-                            <Video className="w-2.5 h-2.5 text-emerald-400" />
-                            <span>Video</span>
-                          </>
-                        ) : (
-                          <>
-                            <ImageIcon className="w-2.5 h-2.5 text-amber-400" />
-                            <span>Foto</span>
-                          </>
                         )}
-                      </span>
+                        <span className="absolute bottom-1 right-1 text-[9px] bg-black/75 px-1.5 py-0.5 rounded text-white backdrop-blur-xs flex items-center gap-1 z-10 font-medium">
+                          {isVid ? (
+                            <>
+                              <Video className="w-2.5 h-2.5 text-emerald-400" />
+                              <span>Video</span>
+                            </>
+                          ) : (
+                            <>
+                              <ImageIcon className="w-2.5 h-2.5 text-amber-400" />
+                              <span>Foto</span>
+                            </>
+                          )}
+                        </span>
+                      </div>
+                      <p className="text-xs mt-1.5 font-bold text-neutral-900 truncate">{p.title}</p>
+                      <p className="text-[10px] text-neutral-500 truncate">{p.loc}</p>
                     </div>
-                    <p className="text-xs mt-1.5 font-bold text-neutral-900 truncate">{p.title}</p>
-                    <p className="text-[10px] text-neutral-500 truncate">{p.loc}</p>
-                  </div>
-                );
-              })}
-            </CardCarousel>
-          )
-        )}
+                  );
+                })}
+              </CardCarousel>
+            )
+          )}
         </section>
 
         {/* PEMBATAS SECTION RAPAT & GARIS ABU-ABU TERANG */}
@@ -2592,20 +2617,22 @@ export default function KarebaFeedFinal() {
               </div>
 
               {/* Tombol Publikasi Kabar - Bebas dari loading, orang bisa langsung posting lagi */}
-              <button
-                id="publish-post-btn"
-                type="button"
-                disabled={!isPublishReady}
-                onClick={handleCreatePost}
-                className={`w-full py-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center gap-2 ${
-                  isPublishReady
-                    ? "bg-[#00632B] hover:bg-[#004f22] text-white cursor-pointer shadow-sm active:scale-[0.99]"
-                    : "bg-neutral-200 text-neutral-400 cursor-not-allowed shadow-none"
-                }`}
-              >
-                <Send className="w-3.5 h-3.5" />
-                <span>Bagikan kabar sekarang</span>
-              </button>
+              <div className="pt-1 pb-1">
+                <button
+                  id="publish-post-btn"
+                  type="button"
+                  disabled={!isPublishReady}
+                  onClick={handleCreatePost}
+                  className={`w-full py-3 text-xs sm:text-sm font-bold rounded-xl transition flex items-center justify-center gap-2 ${
+                    isPublishReady
+                      ? "bg-[#00632B] hover:bg-[#004f22] text-white cursor-pointer shadow-sm active:scale-[0.99]"
+                      : "bg-neutral-200 text-neutral-400 cursor-not-allowed shadow-none"
+                  }`}
+                >
+                  <Send className="w-4 h-4" />
+                  <span>Bagikan kabar sekarang</span>
+                </button>
+              </div>
 
               {/* Indikator Proses Loading Upload di Bawah Papan Tombol */}
               {uploadingCount > 0 && (
@@ -2629,7 +2656,6 @@ export default function KarebaFeedFinal() {
                 </div>
               )}
             </section>
-            <div className="w-full h-[2px] bg-neutral-200" aria-hidden="true" />
           </>
         )}
 
@@ -2848,18 +2874,17 @@ export default function KarebaFeedFinal() {
                   </button>
                 </div>
               ) : (
-                /* TAMPILAN BERSIH SAAT APLIKASI MASIH KOSONG SEPERTI APLIKASI LAIN */
-                <div className="py-16 px-6 text-center flex flex-col items-center justify-center space-y-3.5 animate-fade-in">
-                  <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-[#00632B] shadow-2xs">
-                    <Newspaper className="w-8 h-8 stroke-[1.75]" />
+                <div className="py-5 sm:py-6 px-4 text-center flex flex-col items-center justify-center space-y-2.5 animate-fade-in">
+                  <div className="w-14 h-14 rounded-full bg-neutral-100 border border-neutral-200 flex items-center justify-center text-neutral-400 shadow-2xs">
+                    <Newspaper className="w-7 h-7 stroke-[1.75] text-neutral-400" />
                   </div>
                   <div className="space-y-1">
-                    <h3 className="text-base font-bold text-neutral-900">Belum Ada Kabar Warga</h3>
-                    <p className="text-xs text-neutral-500 max-w-xs leading-relaxed">
+                    <h3 className="text-sm sm:text-base font-bold text-neutral-900">Belum Ada Kabar Warga</h3>
+                    <p className="text-xs text-neutral-500 max-w-xs leading-normal">
                       Aplikasi siap digunakan. Belum ada postingan warga yang diterbitkan. Jadilah yang pertama membagikan kabar!
                     </p>
                   </div>
-                  <div className="flex items-center gap-2 pt-2">
+                  <div className="flex items-center gap-2 pt-1.5 pb-2">
                     <button
                       type="button"
                       onClick={handleCameraClick}
