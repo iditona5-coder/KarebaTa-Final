@@ -9,12 +9,12 @@ interface CardCarouselProps {
 
 /**
  * CardCarousel:
- * Wadah geser kartu custom dengan proteksi ketat anti-klik saat scrolling/dragging.
+ * Wadah geser kartu media horisontal yang mulus dan responsif di HP (touch) maupun desktop (mouse/wheel/panah).
  * 
- * Karakteristik utama:
- * 1. Tidak akan pernah membuka kartu (detail/modal/tirai media) saat pengguna sedang scrolling vertikal maupun horizontal.
- * 2. Menggunakan event capturing 'click' untuk membatalkan klik kartu jika terjadi pergerakan jari/kursor lebih dari 6px.
- * 3. Halaman utama tetap bisa di-scroll ke atas/bawah secara bebas tanpa tersangkut atau memicu pembukaan kartu tak sengaja.
+ * Keunggulan:
+ * 1. Native smooth scrolling (overflow-x-auto, touch-action: pan-x pan-y) - bebas digeser tanpa macet.
+ * 2. Proteksi ketat anti-klik saat menggeser: Mengusap kartu tidak akan memicu klik pembukaan modal.
+ * 3. Halaman utama tetap bisa di-scroll vertikal secara bebas tanpa hambatan.
  */
 export function CardCarousel({
   id = "custom-card-carousel",
@@ -24,14 +24,15 @@ export function CardCarousel({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
+  const [isPointerDown, setIsPointerDown] = useState(false);
 
   // Update visibilitas tombol panah kiri / kanan
   const updateScrollIndicators = useCallback(() => {
     const el = containerRef.current;
     if (!el) return;
     const maxScroll = el.scrollWidth - el.clientWidth;
-    setCanScrollLeft(el.scrollLeft > 4);
-    setCanScrollRight(el.scrollLeft < maxScroll - 4);
+    setCanScrollLeft(el.scrollLeft > 6);
+    setCanScrollRight(el.scrollLeft < maxScroll - 6);
   }, []);
 
   useEffect(() => {
@@ -54,7 +55,7 @@ export function CardCarousel({
   const scrollStep = (direction: "left" | "right") => {
     const el = containerRef.current;
     if (!el) return;
-    const step = 145; // ~1 kartu + gap
+    const step = 150;
     el.scrollBy({
       left: direction === "left" ? -step : step,
       behavior: "smooth",
@@ -62,202 +63,80 @@ export function CardCarousel({
     setTimeout(updateScrollIndicators, 250);
   };
 
-  // Custom Touch & Pointer Drag System dengan proteksi anti-klik saat scroll
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
 
-    let isCardTouch = false;
+    let isDown = false;
     let startX = 0;
     let startY = 0;
     let startScrollLeft = 0;
-    let hasDeterminedDirection = false;
-    let isHorizontalDrag = false;
-    let hasMovedAnyDirection = false;
-    let blockClickUntil = 0;
-    let momentumAnimationId: number | null = null;
-    let touchHistory: { x: number; time: number }[] = [];
+    let hasMoved = false;
+    let dragLockTimeout: any = null;
+    let scrollTimeout: any = null;
 
-    const stopMomentum = () => {
-      if (momentumAnimationId !== null) {
-        cancelAnimationFrame(momentumAnimationId);
-        momentumAnimationId = null;
-      }
+    // Mendeteksi event scroll native (baik dari touch swipe, momentum, trackpad, atau scrollbar)
+    const handleScroll = () => {
+      updateScrollIndicators();
+      // Tandai sedang menggeser agar kartu tidak terklik saat jari menyentuh sambil bergerak
+      (window as any).__KAREBATA_IS_DRAGGING_CARD__ = true;
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        (window as any).__KAREBATA_IS_DRAGGING_CARD__ = false;
+      }, 180);
     };
 
-    const handleTouchStart = (e: TouchEvent) => {
-      stopMomentum();
-
+    // Deteksi sentuhan / klik mouse
+    const handlePointerDown = (e: PointerEvent) => {
       const target = e.target as HTMLElement | null;
       if (!target) return;
+      if (target.closest("button")) return;
 
-      const card = target.closest('[data-card-item="true"]');
-      const isButton = target.closest("button");
-
-      if (!card || isButton) {
-        isCardTouch = false;
-        return;
-      }
-
-      isCardTouch = true;
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
+      isDown = true;
+      hasMoved = false;
+      startX = e.clientX;
+      startY = e.clientY;
       startScrollLeft = el.scrollLeft;
-      hasDeterminedDirection = false;
-      isHorizontalDrag = false;
-      hasMovedAnyDirection = false;
-      touchHistory = [{ x: startX, time: Date.now() }];
+
+      if (e.pointerType === "mouse") {
+        setIsPointerDown(true);
+      }
     };
 
-    const handleTouchMove = (e: TouchEvent) => {
-      if (!isCardTouch) return;
-
-      const currentX = e.touches[0].clientX;
-      const currentY = e.touches[0].clientY;
-      const dx = currentX - startX;
-      const dy = currentY - startY;
+    const handlePointerMove = (e: PointerEvent) => {
+      if (!isDown) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
       const dist = Math.hypot(dx, dy);
 
-      // JIKA JARI BERGERAK > 6px KE ARAH MANA PUN (VERTIKAL ATAU HORIZONTAL):
-      // Ini adalah gestur scrolling, BUKAN tap/klik! Blokir klik kartu!
-      if (dist > 6) {
-        hasMovedAnyDirection = true;
-        blockClickUntil = Date.now() + 500;
+      if (dist > 5 && Math.abs(dx) > Math.abs(dy)) {
+        hasMoved = true;
         (window as any).__KAREBATA_IS_DRAGGING_CARD__ = true;
-      }
-
-      // Tentukan arah gestur
-      if (!hasDeterminedDirection) {
-        if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
-          hasDeterminedDirection = true;
-          if (Math.abs(dx) >= Math.abs(dy)) {
-            // Gerakan horizontal pada kartu
-            isHorizontalDrag = true;
-          } else {
-            // Gerakan vertikal: Pengguna scrolling halaman atas/bawah
-            // Kunci: JANGAN izinkan klik kartu terbuka saat jari diangkat!
-            isHorizontalDrag = false;
-            return;
-          }
-        }
-      }
-
-      if (isHorizontalDrag) {
-        if (e.cancelable) {
-          e.preventDefault();
-        }
         el.scrollLeft = startScrollLeft - dx;
         updateScrollIndicators();
-
-        const now = Date.now();
-        touchHistory.push({ x: currentX, time: now });
-        if (touchHistory.length > 5) {
-          touchHistory.shift();
-        }
       }
     };
 
-    const handleTouchEnd = () => {
-      if (!isCardTouch) return;
-      isCardTouch = false;
+    const handlePointerUp = () => {
+      if (!isDown) return;
+      isDown = false;
+      setIsPointerDown(false);
 
-      // Jika jari sempat bergeser saat scrolling (vertikal maupun horizontal),
-      // tahan flag pemblokir klik agar onClick kartu TIDAK terpicu sama sekali
-      if (hasMovedAnyDirection) {
+      if (hasMoved) {
         (window as any).__KAREBATA_IS_DRAGGING_CARD__ = true;
-        blockClickUntil = Date.now() + 500;
-        setTimeout(() => {
+        if (dragLockTimeout) clearTimeout(dragLockTimeout);
+        dragLockTimeout = setTimeout(() => {
           (window as any).__KAREBATA_IS_DRAGGING_CARD__ = false;
-        }, 500);
+          hasMoved = false;
+        }, 250);
       } else {
         (window as any).__KAREBATA_IS_DRAGGING_CARD__ = false;
       }
-
-      if (isHorizontalDrag && hasMovedAnyDirection) {
-        if (touchHistory.length >= 2) {
-          const first = touchHistory[0];
-          const last = touchHistory[touchHistory.length - 1];
-          const dt = last.time - first.time;
-          const dist = last.x - first.x;
-          if (dt > 0 && dt < 200) {
-            let velocity = (dist / dt) * 14;
-            const friction = 0.94;
-
-            const step = () => {
-              if (Math.abs(velocity) < 0.5) {
-                momentumAnimationId = null;
-                updateScrollIndicators();
-                return;
-              }
-              el.scrollLeft -= velocity;
-              velocity *= friction;
-              updateScrollIndicators();
-              momentumAnimationId = requestAnimationFrame(step);
-            };
-            momentumAnimationId = requestAnimationFrame(step);
-          }
-        }
-      }
-
-      isHorizontalDrag = false;
-      hasDeterminedDirection = false;
-      updateScrollIndicators();
     };
 
-    // Mouse drag untuk desktop
-    let isMouseDown = false;
-    let mouseStartX = 0;
-    let mouseStartY = 0;
-    let mouseStartScrollLeft = 0;
-    let mouseHasMoved = false;
-
-    const handleMouseDown = (e: MouseEvent) => {
-      stopMomentum();
-      const target = e.target as HTMLElement | null;
-      if (!target) return;
-      const card = target.closest('[data-card-item="true"]');
-      const isButton = target.closest("button");
-      if (!card || isButton) return;
-
-      isMouseDown = true;
-      mouseStartX = e.clientX;
-      mouseStartY = e.clientY;
-      mouseStartScrollLeft = el.scrollLeft;
-      mouseHasMoved = false;
-    };
-
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!isMouseDown) return;
-      const dx = e.clientX - mouseStartX;
-      const dy = e.clientY - mouseStartY;
-      const dist = Math.hypot(dx, dy);
-
-      if (dist > 6) {
-        mouseHasMoved = true;
-        blockClickUntil = Date.now() + 500;
-        (window as any).__KAREBATA_IS_DRAGGING_CARD__ = true;
-        el.scrollLeft = mouseStartScrollLeft - dx;
-        updateScrollIndicators();
-      }
-    };
-
-    const handleMouseUp = () => {
-      if (!isMouseDown) return;
-      isMouseDown = false;
-      if (mouseHasMoved) {
-        blockClickUntil = Date.now() + 500;
-        setTimeout(() => {
-          (window as any).__KAREBATA_IS_DRAGGING_CARD__ = false;
-        }, 500);
-      } else {
-        (window as any).__KAREBATA_IS_DRAGGING_CARD__ = false;
-      }
-      updateScrollIndicators();
-    };
-
-    // CAPTURING CLICK HANDLER: KUNCI UTAMA MENCEGAH KARTU TERBUKA SAAT SCROLLING
+    // Cegah klik kartu jika baru saja terjadi geseran jari/mouse
     const handleCaptureClick = (e: MouseEvent) => {
-      if (hasMovedAnyDirection || Date.now() < blockClickUntil || (window as any).__KAREBATA_IS_DRAGGING_CARD__) {
+      if (hasMoved || (window as any).__KAREBATA_IS_DRAGGING_CARD__) {
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
@@ -265,41 +144,38 @@ export function CardCarousel({
       }
     };
 
-    el.addEventListener("touchstart", handleTouchStart, { passive: true });
-    el.addEventListener("touchmove", handleTouchMove, { passive: false });
-    el.addEventListener("touchend", handleTouchEnd, { passive: true });
-    el.addEventListener("touchcancel", handleTouchEnd, { passive: true });
-
-    el.addEventListener("mousedown", handleMouseDown);
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
-
-    // Pasang capture click handler pada fase capturing (true) agar mendahului onClick anak elemen
-    el.addEventListener("click", handleCaptureClick, true);
-
+    // Mouse wheel & trackpad horizontal scroll
     const handleWheel = (e: WheelEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (!target) return;
-      const card = target.closest('[data-card-item="true"]');
-      if (!card) return;
-
       if (e.deltaX !== 0) {
         el.scrollLeft += e.deltaX;
         updateScrollIndicators();
+      } else if (Math.abs(e.deltaY) > 0) {
+        const canScroll =
+          (e.deltaY > 0 && el.scrollLeft < el.scrollWidth - el.clientWidth - 2) ||
+          (e.deltaY < 0 && el.scrollLeft > 2);
+        if (canScroll) {
+          el.scrollLeft += e.deltaY;
+          updateScrollIndicators();
+        }
       }
     };
+
+    el.addEventListener("scroll", handleScroll, { passive: true });
+    el.addEventListener("pointerdown", handlePointerDown, { passive: true });
+    window.addEventListener("pointermove", handlePointerMove, { passive: true });
+    window.addEventListener("pointerup", handlePointerUp, { passive: true });
+    window.addEventListener("pointercancel", handlePointerUp, { passive: true });
+    el.addEventListener("click", handleCaptureClick, true);
     el.addEventListener("wheel", handleWheel, { passive: true });
 
     return () => {
-      stopMomentum();
-      el.removeEventListener("touchstart", handleTouchStart);
-      el.removeEventListener("touchmove", handleTouchMove);
-      el.removeEventListener("touchend", handleTouchEnd);
-      el.removeEventListener("touchcancel", handleTouchEnd);
-
-      el.removeEventListener("mousedown", handleMouseDown);
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
+      if (dragLockTimeout) clearTimeout(dragLockTimeout);
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+      el.removeEventListener("scroll", handleScroll);
+      el.removeEventListener("pointerdown", handlePointerDown);
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerUp);
       el.removeEventListener("click", handleCaptureClick, true);
       el.removeEventListener("wheel", handleWheel);
     };
@@ -319,13 +195,16 @@ export function CardCarousel({
         </button>
       )}
 
-      {/* Container Kartu */}
+      {/* Container Kartu: overflow-x-auto native + touchAction pan-x pan-y */}
       <div
         id={id}
         ref={containerRef}
-        className={`flex gap-2.5 overflow-x-hidden pl-2.5 pr-4 pb-1 select-none ${className}`}
+        className={`flex gap-2.5 overflow-x-auto no-scrollbar pl-2.5 pr-4 pb-1 select-none ${
+          isPointerDown ? "cursor-grabbing" : "cursor-grab"
+        } ${className}`}
         style={{
-          touchAction: "pan-y",
+          touchAction: "pan-x pan-y",
+          overscrollBehaviorX: "contain",
           WebkitOverflowScrolling: "touch",
           scrollbarWidth: "none",
           msOverflowStyle: "none",

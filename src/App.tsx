@@ -2080,12 +2080,12 @@ export default function KarebaFeedFinal() {
         </div>
 
         {/* Spacer Pengganti Ruang Header Fixed agar feed tidak tertutup bar */}
-        <div className={isSearchOpen ? "h-[96px] shrink-0" : "h-[81px] shrink-0"} aria-hidden="true" />
+        <div className={isSearchOpen ? "h-[105px] shrink-0" : "h-[88px] shrink-0"} aria-hidden="true" />
 
         {/* FITUR TARIK/GESER KE BAWAH UNTUK MEMPERBARUI (PULL-TO-REFRESH KUSTOM DENGAN KONTEN TETAP KOKOH TANPA TERGESER TURUN) */}
         <PullToRefresh onRefresh={handlePullRefresh}>
-          {/* PROFIL WARGA */}
-          <section id="profile-section" className="w-full p-4 flex items-center justify-between bg-white border-b border-neutral-100">
+          {/* PROFIL WARGA - Jarak atas lebih lega agar icon profil tidak terlalu mepet ke papan teks berjalan */}
+          <section id="profile-section" className="w-full pt-6 pb-4 px-4 flex items-center justify-between bg-white border-b border-neutral-100">
           <div className="flex items-center gap-3.5 min-w-0">
             {/* Foto Profil: Selalu menampilkan huruf pertama nama pengguna */}
             <div className="relative shrink-0">
@@ -2259,8 +2259,9 @@ export default function KarebaFeedFinal() {
           </div>
         </section>
 
-        {/* HORIZONTAL: KABAR KAMU / KABAR TERSIMPAN */}
-        <section id="my-posts-carousel" className="w-full py-4 border-b border-neutral-200 bg-white">
+        {/* HORIZONTAL: KABAR KAMU / KABAR TERSIMPAN (HANYA TAMPIL JIKA ADA KABAR ATAU MENU TERSIMPAN DIBUKA) */}
+        {(posts.length > 0 || showSavedSection) && (
+          <section id="my-posts-carousel" className="w-full py-4 border-b border-neutral-200 bg-white">
           <div className="flex items-center justify-between mb-3 pl-2.5 pr-4">
             <h2 className="font-bold text-sm tracking-tight text-neutral-900 flex items-center gap-2">
               {showSavedSection ? (
@@ -2337,7 +2338,7 @@ export default function KarebaFeedFinal() {
                       }}
                       onContextMenu={(e) => e.preventDefault()}
                       className="relative w-[125px] min-w-[125px] max-w-[125px] bg-emerald-50/80 hover:bg-emerald-100/70 rounded-xl p-2 cursor-pointer transition-colors border border-emerald-200/80 shadow-xs shrink-0 select-none"
-                      style={{ WebkitTouchCallout: "none" }}
+                      style={{ WebkitTouchCallout: "none", touchAction: "pan-x pan-y" }}
                     >
                       <div className="relative overflow-hidden rounded-lg bg-neutral-100 h-20 w-full flex items-center justify-center select-none">
                         {isVid ? (
@@ -2392,22 +2393,7 @@ export default function KarebaFeedFinal() {
             )
           ) : (
             /* KARTU KABAR KAMU (TAMPIL KETIKA KARTU TERSIMPAN TIDAK AKTIF) */
-            posts.length === 0 ? (
-              <div
-                onClick={handleCameraClick}
-                className="w-full py-3.5 px-4 flex items-center justify-between bg-neutral-50/80 hover:bg-neutral-100/70 rounded-2xl border border-dashed border-neutral-200 cursor-pointer transition active:scale-[0.99]"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-[#00632B] flex items-center justify-center shrink-0">
-                    <CameraIcon className="w-5 h-5" />
-                  </div>
-                  <div className="min-w-0 text-left">
-                    <p className="text-xs font-bold text-neutral-800 truncate">Kabar Kamu Belum Ada</p>
-                    <p className="text-[11px] text-neutral-500">Mulai bagikan foto atau video pertamamu</p>
-                  </div>
-                </div>
-              </div>
-            ) : (
+            posts.length === 0 ? null : (
               <CardCarousel id="user-posts-carousel" className="animate-fade-in">
                 {posts.map((p) => {
                   const isVid =
@@ -2428,7 +2414,7 @@ export default function KarebaFeedFinal() {
                       }}
                       onContextMenu={(e) => e.preventDefault()}
                       className="relative w-[125px] min-w-[125px] max-w-[125px] bg-neutral-50 hover:bg-neutral-100 rounded-xl p-2 cursor-pointer transition-colors border border-neutral-200 shadow-xs shrink-0 select-none group"
-                      style={{ WebkitTouchCallout: "none" }}
+                      style={{ WebkitTouchCallout: "none", touchAction: "pan-x pan-y" }}
                     >
                       <div className="relative overflow-hidden rounded-lg bg-neutral-100 h-20 w-full flex items-center justify-center select-none">
                         {isVid ? (
@@ -2487,6 +2473,7 @@ export default function KarebaFeedFinal() {
             )
           )}
         </section>
+        )}
 
         {/* PEMBATAS SECTION RAPAT & GARIS ABU-ABU TERANG */}
         <div className="w-full h-[2px] bg-neutral-200" aria-hidden="true" />
@@ -2883,24 +2870,6 @@ export default function KarebaFeedFinal() {
                     <p className="text-xs text-neutral-500 max-w-xs leading-normal">
                       Aplikasi siap digunakan. Belum ada postingan warga yang diterbitkan. Jadilah yang pertama membagikan kabar!
                     </p>
-                  </div>
-                  <div className="flex items-center gap-2 pt-1.5 pb-2">
-                    <button
-                      type="button"
-                      onClick={handleCameraClick}
-                      className="flex items-center gap-1.5 px-4 py-2 bg-[#00632B] hover:bg-[#004f22] text-white text-xs font-bold rounded-full shadow-xs transition active:scale-95 cursor-pointer"
-                    >
-                      <CameraIcon className="w-3.5 h-3.5" />
-                      <span>Buka Kamera</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleGalleryClick}
-                      className="flex items-center gap-1.5 px-4 py-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-bold rounded-full transition active:scale-95 cursor-pointer"
-                    >
-                      <ImageIcon className="w-3.5 h-3.5" />
-                      <span>Pilih Galeri</span>
-                    </button>
                   </div>
                 </div>
               )

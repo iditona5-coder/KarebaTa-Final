@@ -547,6 +547,7 @@ export const FeedMedia: React.FC<FeedMediaProps> = ({
             poster={posterUrl || thumbnail}
             preload="auto"
             className="w-full h-full object-cover object-center cursor-pointer block"
+            style={{ touchAction: "pan-y" }}
             playsInline
             loop
             muted={isMuted}
@@ -669,7 +670,7 @@ export const FeedMedia: React.FC<FeedMediaProps> = ({
           className={`w-full h-full object-cover object-center block pointer-events-auto select-none cursor-pointer transition-opacity duration-150 ${
             isImageReady ? "opacity-100" : "opacity-0"
           }`}
-          style={{ WebkitTouchCallout: "none" }}
+          style={{ WebkitTouchCallout: "none", touchAction: "pan-y" }}
         />
 
         {/* Tombol Icon Layar Penuh di Atas Kiri */}

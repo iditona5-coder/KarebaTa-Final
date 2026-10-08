@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { Pause, Play, ChevronRight, X, Megaphone, MapPin, Clock } from "lucide-react";
+import { X, Megaphone, MapPin, Clock } from "lucide-react";
 
 export interface BulletinItem {
   id: string;
@@ -56,7 +56,6 @@ export const RunningTextBar: React.FC<RunningTextBarProps> = ({
   announcements = DEFAULT_ANNOUNCEMENTS,
   onItemClick,
 }) => {
-  const [isPaused, setIsPaused] = useState(false);
   const [isListOpen, setIsListOpen] = useState(false);
 
   // Normalisasi data pengumuman
@@ -112,8 +111,8 @@ export const RunningTextBar: React.FC<RunningTextBarProps> = ({
       const delta = (timestamp - lastTimeRef.current) / 1000;
       lastTimeRef.current = timestamp;
 
-      // Jalankan animasi jika tidak sedang di-pause atau di-hover
-      if (!isPaused && !isHoveredRef.current) {
+      // Jalankan animasi jika tidak sedang di-hover
+      if (!isHoveredRef.current) {
         const half = halfWidthRef.current;
         if (half > 0) {
           offsetRef.current += speed * delta;
@@ -135,7 +134,7 @@ export const RunningTextBar: React.FC<RunningTextBarProps> = ({
         cancelAnimationFrame(animFrameIdRef.current);
       }
     };
-  }, [isPaused, measureHalfWidth, applyTransform, items]);
+  }, [measureHalfWidth, applyTransform, items]);
 
   // Jalankan animasi otomatis tanpa drag manual
   const handleItemPress = (item: BulletinItem) => {
@@ -155,13 +154,18 @@ export const RunningTextBar: React.FC<RunningTextBarProps> = ({
         style={{ touchAction: "pan-y" }}
       >
         {/* Label Badge Statis Kiri - Merah Kontras Modern */}
-        <div className="bg-red-600 text-white h-full px-2 sm:px-2.5 flex items-center gap-1.5 shrink-0 z-20 font-black text-[9px] sm:text-[10px] tracking-wider uppercase shadow-xs pointer-events-none">
+        <button
+          type="button"
+          onClick={() => setIsListOpen(true)}
+          className="bg-red-600 hover:bg-red-700 active:scale-95 transition text-white h-full px-2 sm:px-2.5 flex items-center gap-1.5 shrink-0 z-20 font-black text-[9px] sm:text-[10px] tracking-wider uppercase shadow-xs cursor-pointer select-none"
+          aria-label="Buka info pengumuman warga"
+        >
           <span className="relative flex h-1.5 w-1.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-80" />
             <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-white" />
           </span>
           <span className="whitespace-nowrap font-extrabold tracking-tight">INFO</span>
-        </div>
+        </button>
 
         {/* Area Viewport Marquee (Teks mengalir murni otomatis, sentuhan layar tidak akan menyeret teks) */}
         <div
@@ -214,29 +218,6 @@ export const RunningTextBar: React.FC<RunningTextBarProps> = ({
               </div>
             ))}
           </div>
-        </div>
-
-        {/* Tombol Kontrol Kustom Kanan: Jeda/Lanjut & Buka Semua (Tanpa Title Native Browser) */}
-        <div className="flex items-center h-full bg-neutral-900 border-l border-neutral-800 shrink-0 z-20 px-1">
-          <button
-            id="running-text-toggle-btn"
-            type="button"
-            onClick={() => setIsPaused((prev) => !prev)}
-            className="p-1 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded transition cursor-pointer"
-            aria-label="Jeda atau lanjutkan teks berjalan"
-          >
-            {isPaused ? <Play className="w-2.5 h-2.5 fill-current" /> : <Pause className="w-2.5 h-2.5 fill-current" />}
-          </button>
-          <button
-            id="running-text-list-btn"
-            type="button"
-            onClick={() => setIsListOpen(true)}
-            className="px-1.5 py-0.5 text-[9px] font-semibold text-neutral-300 hover:text-white hover:bg-neutral-800 rounded transition cursor-pointer whitespace-nowrap hidden sm:flex items-center gap-0.5"
-            aria-label="Lihat seluruh daftar info"
-          >
-            <span>Semua</span>
-            <ChevronRight className="w-2.5 h-2.5" />
-          </button>
         </div>
       </div>
 
